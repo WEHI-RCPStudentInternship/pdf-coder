@@ -1,24 +1,60 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
 import { setupCounter } from './counter.js'
+import * as pdfjsLib from "pdfjs-dist"
 
 document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
+  <div class="pdf-container">
+    <input
+      id="upload"
+      type="file"
+      accept="application/pdf,application/msword,
+      application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    />
+    <canvas id="pdf"></canvas>
   </div>
 `
 
-setupCounter(document.querySelector('#counter'))
+// setupCounter(document.querySelector('#counter'))
+
+const uploadElement = document.getElementById("upload");
+uploadElement.addEventListener("change", handleFiles, false);
+
+function handleFiles(e) {
+  let file = this.files[0];
+  if (!file) {
+    return;
+  }
+  var fileReader = new FileReader();
+  fileReader.onload = function (e) {
+    render(new Uint8Array(e.target.result));
+  };
+  fileReader.readAsArrayBuffer(file);
+}
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
+async function render(file) {
+	const loadingTask = pdfjsLib.getDocument({data: file});
+	const pdf = await loadingTask.promise;
+
+	// Load the first page.
+	const page = await pdf.getPage(1);
+
+	const scale = 1;
+	const viewport = page.getViewport({ scale });
+
+	// Set the canvas dimensions.
+	const canvas = document.getElementById('pdf');
+	const context = canvas.getContext('2d');
+	canvas.height = viewport.height;
+	canvas.width = viewport.width;
+
+	// Render the page into the canvas.
+  if (context === null) return;
+	const renderContext = {
+		canvasContext: context,
+		viewport: viewport,
+	};
+
+  page.render(renderContext);
+	console.log('Page rendered!');
+};
