@@ -1,37 +1,71 @@
 import './style.css'
-import { setupCounter } from './counter.js'
 import * as pdfjsLib from "pdfjs-dist"
 
 document.querySelector('#app').innerHTML = `
-  <div class="pdf-container">
+  <div class="app-container">
     <input
       id="upload"
       type="file"
       accept="application/pdf,application/msword,
       application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     />
-    <canvas id="pdf"></canvas>
+    <input
+      data-modal-target="#pdf-modal"
+      type="button"
+      id="uploadBtn"
+      value="Browse..."
+      onclick="document.getElementById('upload').click()"
+    />
+    <div id="pdf-modal">
+      <div data-close-modal id="overlay">
+        <canvas id="pdf"></canvas>
+      </div>
+    </div>
   </div>
 `
 
-// setupCounter(document.querySelector('#counter'))
-
+// getting the HTML elements
 const uploadElement = document.getElementById("upload");
-uploadElement.addEventListener("change", handleFiles, false);
+// const openModalButton = document.querySelector("[data-modal-target]");
+const pdfModal = document.getElementById("pdf-modal");
+const closeModalElement = document.querySelector("[data-close-modal]");
 
+
+// adding event listeners
+uploadElement.addEventListener("change", handleFiles, false);
+// openModalButton.addEventListener("click", () => {
+//   const modal = document.querySelector(openModalButton.dataset.modalTarget);
+// })
+//
+closeModalElement.addEventListener("click", () => {
+  if (!pdfModal) return;
+  if (!pdfModal.classList.contains("active")) return;
+  pdfModal.classList.remove("active");
+})
+
+// handling local files uploads, to be changed when we have a backend and db
 function handleFiles(e) {
-  let file = this.files[0];
+  if (!pdfModal || !closeModalElement) {
+    return;
+  }
+  const file = this.files[0];
   if (!file) {
     return;
   }
-  var fileReader = new FileReader();
+  const fileReader = new FileReader();
   fileReader.onload = function (e) {
     render(new Uint8Array(e.target.result));
   };
   fileReader.readAsArrayBuffer(file);
+
+  if (pdfModal.classList.contains("active")) return;
+  pdfModal.classList.add("active");
 }
 
+
+//PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
+//pdf file render function
 async function render(file) {
 	const loadingTask = pdfjsLib.getDocument({data: file});
 	const pdf = await loadingTask.promise;
