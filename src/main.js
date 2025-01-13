@@ -9,16 +9,19 @@ document.querySelector('#app').innerHTML = `
       accept="application/pdf,application/msword,
       application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     />
-    <button
-      data-modal-target="#pdf-modal"
-      id="uploadBtn"
-      value="Browse..."
-      onclick="document.getElementById('upload').click()"
-    >
-      <span id="uploadBtnText">
-        Upload file
-      </span>
-    </button>
+    <div class="toolbar">
+      <button
+        data-modal-target="#pdf-modal"
+        id="uploadBtn"
+        value="Browse..."
+        onclick="document.getElementById('upload').click()"
+      >
+        <span id="uploadBtnText">
+          +
+        </span>
+      </button>
+    </div>
+    <div id="dashboard"></div>
   </div>
   <div id="pdf-modal">
     <div class="navbar" id="header">
@@ -33,12 +36,21 @@ document.querySelector('#app').innerHTML = `
   <div id="overlay"></div>
 `
 
+const fileList = [];
+
 // getting the HTML elements
 const uploadElement = document.getElementById("upload");
 // const openModalButton = document.querySelector("[data-modal-target]");
 const pdfModal = document.getElementById("pdf-modal");
 const overlay = document.getElementById("overlay");
 const closeModalButton = document.querySelector("[data-close-button]");
+const dashboard = document.getElementById("dashboard");
+
+// file reader
+const fileReader = new FileReader();
+fileReader.onload = function (e) {
+  render(new Uint8Array(e.target.result));
+};
 
 
 // adding event listeners
@@ -61,19 +73,19 @@ function handleFiles(e) {
     return;
   }
 
-  document.getElementById("pdf-name").innerHTML = file.name;
-  const fileReader = new FileReader();
-  fileReader.onload = function (e) {
-    render(new Uint8Array(e.target.result));
-  };
-  fileReader.readAsArrayBuffer(file);
+  fileList.push(file);
 
-  openModal();
+  addFileToDashboard(file);
 }
 
 
-function openModal() {
+function openModal(file) {
   if (pdfModal.classList.contains("active")) return;
+
+  document.getElementById("pdf-name").innerHTML = file.name;
+
+  fileReader.readAsArrayBuffer(file);
+
   pdfModal.classList.add("active");
   overlay.classList.add("active");
 }
@@ -83,4 +95,21 @@ function closeModal() {
   if (!pdfModal.classList.contains("active")) return;
   pdfModal.classList.remove("active");
   overlay.classList.remove("active");
+}
+
+
+function addFileToDashboard(file) {
+  if (!dashboard) return;
+
+  const newFile = document.createElement("div");
+  newFile.innerHTML = `
+    <div class="file">
+      ${file.name}
+    </div>
+  `
+
+  newFile.firstElementChild.addEventListener("click", () => {
+    openModal(file);
+  })
+  dashboard.appendChild(newFile.firstElementChild);
 }
