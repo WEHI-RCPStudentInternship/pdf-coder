@@ -12,6 +12,8 @@ class OutputScale {
     return this.sx !== 1 || this.sy !== 1;
   }
 }
+
+
 function approximateFraction(x) {
   // Fast paths for int numbers or their inversions.
   if (Math.floor(x) === x) {
@@ -57,6 +59,7 @@ function approximateFraction(x) {
   return result;
 }
 
+
 function roundToDivide(x, div) {
   const r = x % div;
   return r === 0 ? x : Math.round(x - r + div);
@@ -100,6 +103,7 @@ export async function render(file) {
   canvas.width = roundToDivide(width * outputScale.sx, sfx[0]);
   canvas.height = roundToDivide(height * outputScale.sy, sfy[0]);
   const { style } = canvas;
+  console.log(canvas);
   style.width = roundToDivide(width, sfx[1]) + "px";
   style.height = roundToDivide(height, sfy[1]) + "px";
 

@@ -22,8 +22,7 @@ document.querySelector('#app').innerHTML = `
   </div>
   <div id="pdf-modal">
     <div class="navbar" id="header">
-      <span class="title">
-        PDF-Coder
+      <span id="pdf-name" class="name">
       </span>
       <button data-close-button class="close-button">&times;</button>
     </div>
@@ -61,6 +60,8 @@ function handleFiles(e) {
   if (!file) {
     return;
   }
+
+  document.getElementById("pdf-name").innerHTML = file.name;
   const fileReader = new FileReader();
   fileReader.onload = function (e) {
     render(new Uint8Array(e.target.result));
