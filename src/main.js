@@ -27,7 +27,9 @@ document.querySelector('#app').innerHTML = `
       </span>
       <button data-close-button class="close-button">&times;</button>
     </div>
-    <canvas id="pdf"></canvas>
+    <div id="pdf-container">
+      <canvas id="pdf"></canvas>
+    </div>
   </div>
   <div id="overlay"></div>
 `
