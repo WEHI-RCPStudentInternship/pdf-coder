@@ -21,17 +21,23 @@ document.querySelector('#app').innerHTML = `
     </button>
   </div>
   <div id="pdf-modal">
-    <div data-close-modal id="overlay">
-      <canvas id="pdf"></canvas>
+    <div class="navbar" id="header">
+      <span class="title">
+        PDF-Coder
+      </span>
+      <button data-close-button class="close-button">&times;</button>
     </div>
+    <canvas id="pdf"></canvas>
   </div>
+  <div id="overlay"></div>
 `
 
 // getting the HTML elements
 const uploadElement = document.getElementById("upload");
 // const openModalButton = document.querySelector("[data-modal-target]");
 const pdfModal = document.getElementById("pdf-modal");
-const closeModalElement = document.querySelector("[data-close-modal]");
+const overlay = document.getElementById("overlay");
+const closeModalButton = document.querySelector("[data-close-button]");
 
 
 // adding event listeners
@@ -40,15 +46,13 @@ uploadElement.addEventListener("change", handleFiles, false);
 //   const modal = document.querySelector(openModalButton.dataset.modalTarget);
 // })
 //
-closeModalElement.addEventListener("click", () => {
-  if (!pdfModal) return;
-  if (!pdfModal.classList.contains("active")) return;
-  pdfModal.classList.remove("active");
+closeModalButton.addEventListener("click", () => {
+  closeModal();
 })
 
 // handling local files uploads, to be changed when we have a backend and db
 function handleFiles(e) {
-  if (!pdfModal || !closeModalElement) {
+  if (!pdfModal || !overlay) {
     return;
   }
   const file = this.files[0];
@@ -61,6 +65,19 @@ function handleFiles(e) {
   };
   fileReader.readAsArrayBuffer(file);
 
+  openModal();
+}
+
+
+function openModal() {
   if (pdfModal.classList.contains("active")) return;
   pdfModal.classList.add("active");
+  overlay.classList.add("active");
+}
+
+
+function closeModal() {
+  if (!pdfModal.classList.contains("active")) return;
+  pdfModal.classList.remove("active");
+  overlay.classList.remove("active");
 }
