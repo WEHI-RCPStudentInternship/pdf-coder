@@ -11,6 +11,17 @@
   /* text-rendering: optimizeLegibility; */
   /* -webkit-font-smoothing: antialiased; */
   /* -moz-osx-font-smoothing: grayscale; */
+  --slate-50: rgb(248 250 252);
+  --slate-100: rgb(241 245 249);
+  --slate-200: rgb(226 232 240);
+  --slate-300: rgb(203 213 225);
+  --slate-400: rgb(148 163 184);
+  --slate-500: rgb(100 116 139);
+  --slate-600: rgb(71 85 105);
+  --slate-700: rgb(51 65 85);
+  --slate-800: rgb(30 41 59);
+  --slate-900: rgb(15 23 42);
+  --slate-950: rgb(2 6 23);
 }
 
 /* a { */
@@ -73,10 +84,10 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #88E788;
+  background-color: var(--slate-500);
   cursor: pointer;
   transition: box-shadow 100ms ease-in-out;
-  color: #5a5c6b;
+  color: var(--slate-100);
   margin: 10px;
   padding-left: 10px;
   padding-right: 10px;
@@ -110,18 +121,18 @@ button:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #88E788;
+  background-color: var(--slate-500);
   width: 100%;
   height: 50px;
   padding: 6px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  color: #5a5c6b;
+  color: var(--slate-200);
 }
 
 .navbar .title {
   font-size: 30px;
   font-weight: 600;
-  padding: 12px;
+  padding: 20px;
 }
 
 .navbar .name {
@@ -189,7 +200,7 @@ button:focus-visible {
   left: 50%;
   transform: translate(-50%, -50%);
   transition: opacity 200ms ease-in-out;
-  background-color: rgba(0,0,0,0.25);
+  background-color: rgb(from var(--slate-700) r g b / 0.25);
   width: 100vw;
   height: 100vh;
   z-index: 1;
@@ -235,7 +246,7 @@ canvas {
   justify-content: start;
   align-items: center;
   flex-wrap: wrap;
-  color: #5a5c6b;
+  color: var(--slate-600);
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 20px;
@@ -265,7 +276,7 @@ canvas {
 #control-panel {
   position: absolute;
   bottom: 10px;
-  background-color: rgba(90, 92, 107, 0.25); /* #5a5c6b */
+  background-color: rgb(from var(--slate-400) r g b / 0.25);
   border-radius: 8px;
   padding: 0;
   padding-left: 10px;
@@ -279,7 +290,7 @@ canvas {
   margin: 6px;
   padding: 4px;
   padding-bottom: 1px;
-  background-color: rgba(90, 92, 107, 0.1); /* #5a5c6b */
+  background-color: rgb(from var(--slate-400) r g b / 0.1); /* #5a5c6b */
 }
 
 .icon-size {
