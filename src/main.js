@@ -1,5 +1,5 @@
 import './style.css'
-import { render } from "./components/pdf"
+import { PDFRenderer } from "./components/pdf"
 
 document.querySelector('#app').innerHTML = `
   <div class="app-container">
@@ -21,7 +21,8 @@ document.querySelector('#app').innerHTML = `
         </span>
       </button>
     </div>
-    <div id="dashboard"></div>
+    <div id="dashboard">
+    </div>
   </div>
   <div id="pdf-modal">
     <div class="navbar" id="header">
@@ -31,6 +32,18 @@ document.querySelector('#app').innerHTML = `
     </div>
     <div id="pdf-container">
       <canvas id="pdf"></canvas>
+    </div>
+    <div id="control-panel">
+      <button id="prev" class="pdf-nav-button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+        </svg>
+      </button>
+      <button id="next" class="pdf-nav-button">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+        </svg>
+      </button>
     </div>
   </div>
   <div id="overlay"></div>
@@ -45,11 +58,19 @@ const pdfModal = document.getElementById("pdf-modal");
 const overlay = document.getElementById("overlay");
 const closeModalButton = document.querySelector("[data-close-button]");
 const dashboard = document.getElementById("dashboard");
+const canvas = document.getElementById("pdf");
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
+
+const renderer = new PDFRenderer();
+
+prev.onclick = prevPage;
+next.onclick = nextPage;
 
 // file reader
 const fileReader = new FileReader();
 fileReader.onload = function (e) {
-  render(new Uint8Array(e.target.result));
+  renderer.render(e.target.result);
 };
 
 
@@ -64,7 +85,7 @@ closeModalButton.addEventListener("click", () => {
 })
 
 // handling local files uploads, to be changed when we have a backend and db
-function handleFiles(e) {
+function handleFiles() {
   if (!pdfModal || !overlay) {
     return;
   }
@@ -80,7 +101,7 @@ function handleFiles(e) {
 
 
 function openModal(file) {
-  if (pdfModal.classList.contains("active")) return;
+  if (!file || pdfModal.classList.contains("active") || !canvas) return;
 
   document.getElementById("pdf-name").innerHTML = file.name;
 
@@ -92,9 +113,12 @@ function openModal(file) {
 
 
 function closeModal() {
-  if (!pdfModal.classList.contains("active")) return;
+  if (!pdfModal.classList.contains("active") || !canvas) return;
   pdfModal.classList.remove("active");
   overlay.classList.remove("active");
+
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 
@@ -112,4 +136,16 @@ function addFileToDashboard(file) {
     openModal(file);
   })
   dashboard.appendChild(newFile.firstElementChild);
+}
+
+
+function nextPage() {
+  if (!renderer) return;
+  renderer.nextPage();
+}
+
+
+function prevPage() {
+  if (!renderer) return;
+  renderer.prevPage();
 }

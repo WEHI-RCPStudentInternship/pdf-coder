@@ -67,55 +67,101 @@ function roundToDivide(x, div) {
 
 // PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
-// pdf file render function
-export async function render(file) {
-	const loadingTask = pdfjsLib.getDocument({data: file});
-	const pdf = await loadingTask.promise;
-	const canvas = document.getElementById('pdf');
-	const context = canvas.getContext('2d');
+// pdf file renderer
+export class PDFRenderer {
+  canvas = null;
+  metadata = null;
+  pdfDocument = null;
+  currentPage = 0;
+  currentNumPages = 0;
 
-	// Load the first page.
-	const page = await pdf.getPage(1);
-
-  // not scale of 1 because it causes the pdf to overflow
-  // this is just a temporaty solution
-	const scale = 0.9;
-	const viewport = page.getViewport({ scale });
-
-	// To make the render clearer
-  // if we just update the canvas and the render context acccording to the
-  // viewport values, the texts will not be clear
-  const MAX_CANVAS_PIXELS = 16777216;
-  const outputScale = new OutputScale();
-  const maxCanvasPixels = MAX_CANVAS_PIXELS;
-  const { width, height } = viewport;
-  if (maxCanvasPixels > 0) {
-    const pixelsInViewport = width * height;
-    const maxScale = Math.sqrt(maxCanvasPixels / pixelsInViewport);
-    if (outputScale.sx > maxScale || outputScale.sy > maxScale) {
-      outputScale.sx = maxScale;
-      outputScale.sy = maxScale;
-    }
+  constructor() {
+    this.currentPage = 0;
+    this.currentNumPages = 0;
   }
-  const sfx = approximateFraction(outputScale.sx);
-  const sfy = approximateFraction(outputScale.sy);
 
-  canvas.width = roundToDivide(width * outputScale.sx, sfx[0]);
-  canvas.height = roundToDivide(height * outputScale.sy, sfy[0]);
-  const { style } = canvas;
-  console.log(canvas);
-  style.width = roundToDivide(width, sfx[1]) + "px";
-  style.height = roundToDivide(height, sfy[1]) + "px";
+  load(file) {
+    this.pdfDocument = pdfjsLib.getDocument({ data: file });
+    this.pdfDocument.promise.then((pdf) => {
+      this.currentNumPages = pdf.numPages;
+      pdf.getMetadata().then((metadata) => {
+        this.metadata = metadata;
+      })
+    })
+    this.currentPage = 1;
+  }
 
-  const transform = outputScale.scaled
-        ? [outputScale.sx, 0, 0, outputScale.sy, 0, 0]
-        : null;
-  const renderContext = {
-    canvasContext: context,
-    transform,
-    viewport,
-  };
+  render(file) {
+    if (file) this.load(file);
+    if (!this.pdfDocument) return;
 
-  page.render(renderContext);
-	console.log('Page rendered!');
+    this.pdfDocument.promise.then((pdf) => {
+      const canvas = document.getElementById('pdf');
+      const context = canvas.getContext('2d');
+
+      // Load the first page.
+      pdf.getPage(this.currentPage).then((page) => {
+        // not scale of 1 because it causes the pdf to overflow
+        // this is just a temporaty solution
+        const scale = 0.85;
+        const viewport = page.getViewport({ scale });
+
+        // To make the render clearer
+        // if we just update the canvas and the render context acccording to the
+        // viewport values, the texts will not be clear
+        const MAX_CANVAS_PIXELS = 16777216;
+        const outputScale = new OutputScale();
+        const { width, height } = viewport;
+        if (MAX_CANVAS_PIXELS > 0) {
+          const pixelsInViewport = width * height;
+          const maxScale = Math.sqrt(MAX_CANVAS_PIXELS / pixelsInViewport);
+          if (outputScale.sx > maxScale || outputScale.sy > maxScale) {
+            outputScale.sx = maxScale;
+            outputScale.sy = maxScale;
+          }
+        }
+        const sfx = approximateFraction(outputScale.sx);
+        const sfy = approximateFraction(outputScale.sy);
+
+        canvas.width = roundToDivide(width * outputScale.sx, sfx[0]);
+        canvas.height = roundToDivide(height * outputScale.sy, sfy[0]);
+        const { style } = canvas;
+        style.width = roundToDivide(width, sfx[1]) + "px";
+        style.height = roundToDivide(height, sfy[1]) + "px";
+
+        const transform = outputScale.scaled
+              ? [outputScale.sx, 0, 0, outputScale.sy, 0, 0]
+              : null;
+        const renderContext = {
+          canvasContext: context,
+          transform,
+          viewport,
+        };
+
+        page.render(renderContext);
+        console.log('Page rendered!');
+      })
+    })
+  }
+
+  nextPage() {
+    if (this.currentPage === this.currentNumPages) return;
+    if (this.currentPage > this.currentNumPages) {
+      this.currentPage = this.currentNumPages;
+      return;
+    }
+    this.currentPage++;
+    this.render();
+  }
+
+  prevPage() {
+    const FIRST_PAGE = 1;
+    if (this.currentPage === FIRST_PAGE) return;
+    if (this.currentPage < FIRST_PAGE) {
+      this.currentPage = FIRST_PAGE;
+      return;
+    }
+    this.currentPage--;
+    this.render();
+  }
 };

@@ -2,25 +2,25 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #f5f5f5;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /**/
+  /* color-scheme: light dark; */
+  /* color: rgba(255, 255, 255, 0.87); */
+  /* background-color: #f5f5f5; */
+  /**/
+  /* font-synthesis: none; */
+  /* text-rendering: optimizeLegibility; */
+  /* -webkit-font-smoothing: antialiased; */
+  /* -moz-osx-font-smoothing: grayscale; */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+/* a { */
+/*   font-weight: 500; */
+/*   color: #646cff; */
+/*   text-decoration: inherit; */
+/* } */
+/* a:hover { */
+/*   color: #535bf2; */
+/* } */
 
 body {
   margin: 0;
@@ -46,26 +46,26 @@ h1 {
   flex-direction: column;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vanilla:hover {
-  filter: drop-shadow(0 0 2em #f7df1eaa);
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+/* .logo { */
+/*   height: 6em; */
+/*   padding: 1.5em; */
+/*   will-change: filter; */
+/*   transition: filter 300ms; */
+/* } */
+/* .logo:hover { */
+/*   filter: drop-shadow(0 0 2em #646cffaa); */
+/* } */
+/* .logo.vanilla:hover { */
+/*   filter: drop-shadow(0 0 2em #f7df1eaa); */
+/* } */
+/**/
+/* .card { */
+/*   padding: 2em; */
+/* } */
+/**/
+/* .read-the-docs { */
+/*   color: #888; */
+/* } */
 
 button {
   border-radius: 8px;
@@ -82,6 +82,7 @@ button {
   padding-right: 10px;
   padding-top: 6px;
   padding-bottom: 6px;
+  border-width: 0px;
 }
 button:hover {
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
@@ -91,18 +92,18 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+/* @media (prefers-color-scheme: light) { */
+/*   :root { */
+/*     color: #213547; */
+/*     background-color: #ffffff; */
+/*   } */
+/*   a:hover { */
+/*     color: #747bff; */
+/*   } */
+/*   button { */
+/*     background-color: #f9f9f9; */
+/*   } */
+/* } */
 
 .navbar {
   position: relative;
@@ -147,7 +148,7 @@ button:focus-visible {
   width: 100%;
   height: 100%;
   padding: 20px;
-  box-sizing: border-box;
+  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
 }
 
 #upload {
@@ -155,7 +156,6 @@ button:focus-visible {
 }
 
 #uploadBtn {
-  border-width: 0px;
   font-size: 20px;
   font-weight: bold;
   padding-top: 3px;
@@ -229,8 +229,9 @@ canvas {
 
 #dashboard {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 50px;
+  height: 100%;
   justify-content: start;
   align-items: center;
   flex-wrap: wrap;
@@ -241,6 +242,7 @@ canvas {
   padding-right: 20px;
   box-sizing: border-box;
   gap: 5px;
+  position: relative;
 }
 
 #dashboard .file {
@@ -248,9 +250,40 @@ canvas {
   font-weight: 400;
   font-size: 16px;
   border-radius: 8px;
-  border-width: 2px;
-  border-color: #5a5c6b;
-  border-style: solid;
-  padding: 5px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  padding: 10px;
+  width: 100%;
+  display: flex;
+  justify-self: start;
   box-sizing: border-box;
+}
+
+#dashboard .file:hover {
+  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+#control-panel {
+  position: absolute;
+  bottom: 10px;
+  background-color: rgba(90, 92, 107, 0.25); /* #5a5c6b */
+  border-radius: 8px;
+  padding: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+  justify-content: space-between;
+  display: flex;
+  gap: 20px;
+}
+
+.pdf-nav-button {
+  margin: 6px;
+  padding: 4px;
+  padding-bottom: 1px;
+  background-color: rgba(90, 92, 107, 0.1); /* #5a5c6b */
+}
+
+.icon-size {
+  width: 1.5rem; /* 24px */
+  height: 1.5rem;
+  padding: 0;
 }
