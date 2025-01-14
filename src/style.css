@@ -103,6 +103,26 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+select {
+  border-radius: 8px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--slate-500);
+  cursor: pointer;
+  transition: box-shadow 100ms ease-in-out;
+  color: var(--slate-100);
+  margin: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-width: 0px;
+}
+select:hover {
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
 /* @media (prefers-color-scheme: light) { */
 /*   :root { */
 /*     color: #213547; */
@@ -119,11 +139,12 @@ button:focus-visible {
 .navbar {
   position: relative;
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
   align-items: center;
   background-color: var(--slate-500);
   width: 100%;
   height: 50px;
+  max-height: 50px;
   padding: 6px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   color: var(--slate-200);
@@ -133,15 +154,71 @@ button:focus-visible {
   font-size: 30px;
   font-weight: 600;
   padding: 20px;
+  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.navbar .name {
-  font-size: 18px;
+.topbar {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--slate-500);
+  width: 100%;
+  height: 50px;
+  max-height: 50px;
+  padding: 6px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  color: var(--slate-200);
+}
+
+.topbar .item {
+  display: flex;
+  justify-items: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar .item.middle {
+  max-width: max-content;
+}
+
+.topbar .item.right {
+  justify-content: end;
+}
+
+.topbar .item .name {
+  font-size: 15px;
   font-weight: 300;
   padding: 12px;
+  justify-self: start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.navbar .close-button {
+.topbar .item .pagenum {
+  font-size: 15px;
+  font-weight: 300;
+  padding: 6px;
+  padding-left: 12px;
+  padding-right: 12px;
+  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  border-radius: 8px;
+  background-color: rgb(from var(--slate-600) r g b / 0.25);
+  justify-self: center;
+  width: max-content;
+}
+
+.topbar .item .close-button {
   cursor: pointer;
   border: none;
   outline: none;
@@ -149,6 +226,7 @@ button:focus-visible {
   font-size: 25px;
   font-weight: bold;
   padding-top: 3px;
+  justify-self: end;
 }
 
 .app-container {
@@ -170,6 +248,11 @@ button:focus-visible {
   font-size: 20px;
   font-weight: bold;
   padding-top: 3px;
+  padding-left: 15px;
+  padding-right: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #pdf-modal {
@@ -228,6 +311,8 @@ button:focus-visible {
 canvas {
   max-width: 100%;
   max-height: 100%;
+  min-width: max-content;
+  min-height: max-content;
 }
 
 .toolbar {
@@ -276,7 +361,7 @@ canvas {
 #control-panel {
   position: absolute;
   bottom: 10px;
-  background-color: rgb(from var(--slate-400) r g b / 0.25);
+  background-color: rgb(from var(--slate-700) r g b / 0.5);
   border-radius: 8px;
   padding: 0;
   padding-left: 10px;
@@ -289,8 +374,11 @@ canvas {
 .pdf-nav-button {
   margin: 6px;
   padding: 4px;
-  padding-bottom: 1px;
-  background-color: rgb(from var(--slate-400) r g b / 0.1); /* #5a5c6b */
+  background-color: rgb(from var(--slate-500) r g b / 0.1);
+  color: var(--slate-300);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-size {

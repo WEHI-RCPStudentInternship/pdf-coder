@@ -1,13 +1,20 @@
 import './style.css'
 import { PDFRenderer } from "./components/pdf"
 
+
+const VIEWS = [
+  "single",
+  "multi",
+]
+
+let currentView = VIEWS[0];
+
 document.querySelector('#app').innerHTML = `
   <div class="app-container">
     <input
       id="upload"
       type="file"
-      accept="application/pdf,application/msword,
-      application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      accept="application/pdf"
     />
     <div class="toolbar">
       <button
@@ -25,10 +32,16 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
   <div id="pdf-modal">
-    <div class="navbar" id="header">
-      <span id="pdf-name" class="name">
-      </span>
-      <button data-close-button class="close-button">&times;</button>
+    <div class="topbar" id="header">
+      <div class="item">
+        <span id="pdf-name" class="name"></span>
+      </div>
+      <div class="item middle">
+        <span id="pdf-page" class="pagenum">Test</span>
+      </div>
+      <div class="item right">
+        <button data-close-button class="close-button">&times;</button>
+      </div>
     </div>
     <div id="pdf-container">
       <canvas id="pdf"></canvas>
@@ -39,6 +52,10 @@ document.querySelector('#app').innerHTML = `
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
         </svg>
       </button>
+      <select id="change-view" class="pdf-nav-button">
+        <option value="single">Single page</option>
+        <option value="multi">Multipage</option>
+      </select>
       <button id="next" class="pdf-nav-button">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
           <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -59,29 +76,27 @@ const overlay = document.getElementById("overlay");
 const closeModalButton = document.querySelector("[data-close-button]");
 const dashboard = document.getElementById("dashboard");
 const canvas = document.getElementById("pdf");
-const prev = document.getElementById("prev");
-const next = document.getElementById("next");
+const prevButton = document.getElementById("prev");
+const nextButton = document.getElementById("next");
+const changeViewButton = document.getElementById("change-view");
 
 const renderer = new PDFRenderer();
 
-prev.onclick = prevPage;
-next.onclick = nextPage;
+prevButton.onclick = prevPage;
+nextButton.onclick = nextPage;
+changeViewButton.onchange = changeView;
 
 // file reader
 const fileReader = new FileReader();
 fileReader.onload = function (e) {
-  renderer.render(e.target.result);
+  renderer.renderPage(e.target.result);
 };
 
 
 // adding event listeners
 uploadElement.addEventListener("change", handleFiles, false);
-// openModalButton.addEventListener("click", () => {
-//   const modal = document.querySelector(openModalButton.dataset.modalTarget);
-// })
-//
 closeModalButton.addEventListener("click", () => {
-  closeModal();
+  closePDFViewer();
 })
 
 // handling local files uploads, to be changed when we have a backend and db
@@ -100,7 +115,7 @@ function handleFiles() {
 }
 
 
-function openModal(file) {
+function openPDFViewer(file) {
   if (!file || pdfModal.classList.contains("active") || !canvas) return;
 
   document.getElementById("pdf-name").innerHTML = file.name;
@@ -112,7 +127,7 @@ function openModal(file) {
 }
 
 
-function closeModal() {
+function closePDFViewer() {
   if (!pdfModal.classList.contains("active") || !canvas) return;
   pdfModal.classList.remove("active");
   overlay.classList.remove("active");
@@ -133,7 +148,7 @@ function addFileToDashboard(file) {
   `
 
   newFile.firstElementChild.addEventListener("click", () => {
-    openModal(file);
+    openPDFViewer(file);
   })
   dashboard.appendChild(newFile.firstElementChild);
 }
@@ -148,4 +163,9 @@ function nextPage() {
 function prevPage() {
   if (!renderer) return;
   renderer.prevPage();
+}
+
+
+function changeView(e) {
+  currentView = e.target.value;
 }

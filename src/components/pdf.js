@@ -91,7 +91,7 @@ export class PDFRenderer {
     this.currentPage = 1;
   }
 
-  render(file) {
+  renderPage(file) {
     if (file) this.load(file);
     if (!this.pdfDocument) return;
 
@@ -151,7 +151,7 @@ export class PDFRenderer {
       return;
     }
     this.currentPage++;
-    this.render();
+    this.renderPage();
   }
 
   prevPage() {
@@ -162,6 +162,6 @@ export class PDFRenderer {
       return;
     }
     this.currentPage--;
-    this.render();
+    this.renderPage();
   }
 };
