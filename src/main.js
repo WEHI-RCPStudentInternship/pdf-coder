@@ -37,7 +37,7 @@ document.querySelector('#app').innerHTML = `
         <span id="pdf-name" class="name"></span>
       </div>
       <div class="item middle">
-        <span id="pdf-page" class="pagenum">Test</span>
+        <span id="pdf-page" class="pagenum"></span>
       </div>
       <div class="item right">
         <button data-close-button class="close-button">&times;</button>
@@ -89,7 +89,9 @@ changeViewButton.onchange = changeView;
 // file reader
 const fileReader = new FileReader();
 fileReader.onload = function (e) {
-  renderer.renderPage(e.target.result);
+  renderer.load(e.target.result).then(() => {
+    renderer.renderPage()
+  });
 };
 
 
@@ -142,7 +144,7 @@ function addFileToDashboard(file) {
 
   const newFile = document.createElement("div");
   newFile.innerHTML = `
-    <div class="file">
+    <div class="file" tabindex="-1">
       ${file.name}
     </div>
   `

@@ -74,10 +74,14 @@ export class PDFRenderer {
   pdfDocument = null;
   currentPage = 0;
   currentNumPages = 0;
+  container = null;
+  pageElement = null;
 
   constructor() {
     this.currentPage = 0;
     this.currentNumPages = 0;
+    this.container = document.getElementById("pdf-container");
+    this.pageElement = document.getElementById("pdf-page");
   }
 
   load(file) {
@@ -96,20 +100,16 @@ export class PDFRenderer {
     return promise;
   }
 
-  renderPage(file) {
-    if (file) {
-      this.load(file).then(() => { this.renderPage() });
-      return;
-    }
-
+  renderPage({ pagenum, scale } = {}) {
     if (!this.pdfDocument) return;
 
     const canvas = document.getElementById('pdf');
     const context = canvas.getContext('2d');
 
     // Load the page.
-    this.pdfDocument.getPage(this.currentPage).then((page) => {
-      const scale = 0.9;
+    this.pdfDocument.getPage(pagenum ?? this.currentPage).then((page) => {
+      const defaultScale = 0.9;
+      scale = scale ?? defaultScale;
       const viewport = page.getViewport({ scale });
 
       // To make the render clearer
@@ -146,6 +146,7 @@ export class PDFRenderer {
       };
 
       page.render(renderContext).promise.then(() => {
+        this.pageElement.innerHTML = this.currentPage;
         console.log('Page rendered!');
       })
     })

@@ -105,7 +105,7 @@ button:focus-visible {
 
 select {
   border-radius: 8px;
-  padding: 0.6em 1.2em;
+  padding: 1em 2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
@@ -113,11 +113,7 @@ select {
   cursor: pointer;
   transition: box-shadow 100ms ease-in-out;
   color: var(--slate-100);
-  margin: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  margin: 0;
   border-width: 0px;
 }
 select:hover {
@@ -141,13 +137,13 @@ select:hover {
   display: flex;
   justify-content: start;
   align-items: center;
-  background-color: var(--slate-500);
+  background-color: var(--slate-50);
   width: 100%;
   height: 50px;
   max-height: 50px;
   padding: 6px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  color: var(--slate-200);
+  color: var(--slate-500);
 }
 
 .navbar .title {
@@ -165,12 +161,11 @@ select:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--slate-500);
+  background-color: rgb(from var(--slate-800) r g b / 0.8);
   width: 100%;
-  height: 50px;
+  height: 40px;
   max-height: 50px;
   padding: 6px;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   color: var(--slate-200);
 }
 
@@ -182,9 +177,6 @@ select:hover {
   height: 100%;
   box-sizing: border-box; /* stop overflow when there is padding and/or margin */
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .topbar .item.middle {
@@ -199,7 +191,6 @@ select:hover {
   font-size: 15px;
   font-weight: 300;
   padding: 12px;
-  justify-self: start;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -211,10 +202,9 @@ select:hover {
   padding: 6px;
   padding-left: 12px;
   padding-right: 12px;
-  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   border-radius: 8px;
   background-color: rgb(from var(--slate-600) r g b / 0.25);
-  justify-self: center;
   width: max-content;
 }
 
@@ -226,7 +216,6 @@ select:hover {
   font-size: 25px;
   font-weight: bold;
   padding-top: 3px;
-  justify-self: end;
 }
 
 .app-container {
@@ -284,7 +273,7 @@ select:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   transition: opacity 200ms ease-in-out;
-  background-color: rgb(from var(--slate-700) r g b / 0.25);
+  background-color: rgb(from var(--slate-700) r g b / 0.5);
   width: 100vw;
   height: 100vh;
   z-index: 1;
@@ -357,25 +346,32 @@ canvas {
 }
 
 #dashboard .file:hover {
-  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px 0px, rgba(0, 0, 0, 0.3) 0px 1px 3px 0px;
+}
+
+#dashboard .file:active {
+  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
 #control-panel {
   position: absolute;
-  bottom: 10px;
-  background-color: rgb(from var(--slate-700) r g b / 0.5);
+  bottom: 30px;
+  background-color: rgb(from var(--slate-800) r g b / 0.8);
   border-radius: 8px;
-  padding: 0;
-  padding-left: 10px;
-  padding-right: 10px;
   justify-content: space-between;
   display: flex;
-  gap: 20px;
+  gap: 1em;
+  opacity: 0;
+  transition: 100ms ease-in-out;
+}
+
+#control-panel:hover {
+  opacity: 1;
 }
 
 .pdf-nav-button {
-  margin: 6px;
-  padding: 4px;
+  margin: 0.4em;
+  padding: 0.4em;
   background-color: rgb(from var(--slate-500) r g b / 0.1);
   color: var(--slate-300);
   display: flex;
