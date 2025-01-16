@@ -1,5 +1,5 @@
 import './style.css'
-import { PDFRenderer, RenderModes } from "./components/pdf"
+import { PDFViewer, RenderModes } from "./components/renderer"
 
 
 document.querySelector('#app').innerHTML = `
@@ -55,10 +55,6 @@ document.querySelector('#app').innerHTML = `
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
         </svg>
       </button>
-      <select id="change-view" class="pdf-nav-button">
-        <option value="single">Single page</option>
-        <option value="all">All pages</option>
-      </select>
       <button id="next" class="pdf-nav-button">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
           <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -80,23 +76,21 @@ const closeModalButton = document.getElementById("close-button");
 const dashboard = document.getElementById("dashboard");
 const prevButton = document.getElementById("prev");
 const nextButton = document.getElementById("next");
-const changeViewButton = document.getElementById("change-view");
 const renderModeButton = document.getElementById("render-mode-button");
 const renderSingle = document.getElementById("single");
 const renderAll = document.getElementById("all");
 
-const renderer = new PDFRenderer();
+const viewer = new PDFViewer();
 
 prevButton.onclick = prevPage;
 nextButton.onclick = nextPage;
-changeViewButton.onchange = changeView;
 renderModeButton.onclick = nextRenderMode;
 
 // file reader
 const fileReader = new FileReader();
 fileReader.onload = function (e) {
-  renderer.load(e.target.result).then(() => {
-    renderer.render()
+  viewer.load(e.target.result).then(() => {
+    viewer.render()
   });
 };
 
@@ -140,7 +134,7 @@ function closePDFViewer() {
   pdfModal.classList.remove("active");
   overlay.classList.remove("active");
 
-  renderer.close();
+  viewer.close();
 }
 
 
@@ -162,26 +156,26 @@ function addFileToDashboard(file) {
 
 
 function nextPage() {
-  if (!renderer) return;
-  renderer.nextPage();
+  if (!viewer) return;
+  viewer.nextPage();
 }
 
 
 function prevPage() {
-  if (!renderer) return;
-  renderer.prevPage();
+  if (!viewer) return;
+  viewer.prevPage();
 }
 
 
 function changeView(e) {
-  renderer.render(RenderModes[e.target.value]);
+  viewer.render(RenderModes[e.target.value]);
 }
 
 
 function nextRenderMode() {
-  renderer.nextRenderMode();
+  viewer.nextRenderMode();
 
-  switch (renderer.currentRenderMode) {
+  switch (viewer.currentRenderMode) {
     case RenderModes.single:
       renderSingle.classList.add("active");
       renderAll.classList.remove("active");

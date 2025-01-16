@@ -162,9 +162,12 @@ select:hover {
 
 .topbar {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-flow: column;
   justify-content: center;
   align-items: center;
+  align-content: center;
   background-color: rgb(from var(--slate-800) r g b / 0.8);
   width: 100%;
   height: 40px;
@@ -175,21 +178,28 @@ select:hover {
 
 .topbar .item {
   display: flex;
-  justify-items: center;
+  justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
   box-sizing: border-box; /* stop overflow when there is padding */
-  margin: 0;
+  margin: 0.2em;
   gap: 0.2em;
+  min-width: 0;
+  grid-column: 1 / span 3;
+  overflow: hidden;
 }
 
 .topbar .item.middle {
   max-width: max-content;
+  justify-self: center;
+  grid-column: 4 / span 1;
 }
 
 .topbar .item.right {
   justify-content: end;
+  justify-self: end;
+  grid-column: 5 / span 3;
 }
 
 .topbar .item #pdf-name {
@@ -211,12 +221,14 @@ select:hover {
   border-radius: 8px;
   background-color: rgb(from var(--slate-500) r g b / 0.25);
   width: max-content;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
 }
 
 .topbar .item #close-button {
   cursor: pointer;
   background-color: transparent;
-  height: 100%;
 }
 
 .topbar .item #close-button:hover {
@@ -230,7 +242,6 @@ select:hover {
   background-color: transparent;
   position: relative;
   padding: 0.55em 0.8em 0.6em;
-  height: 100%;
   box-sizing: border-box; /* stop overflow when there is padding */
 }
 
