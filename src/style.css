@@ -39,9 +39,9 @@ body {
   flex-direction: column;
   place-items: center;
   min-width: 320px;
-  min-height: 100vh;
-  width: 100vw;
-  height: 100vh;
+  min-height: 100svh;
+  width: 100svw;
+  height: 100svh;
 }
 
 h1 {
@@ -80,22 +80,25 @@ h1 {
 
 button {
   border-radius: 8px;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  padding: 0.45em 0.8em 0.6em;
+  font-size: 1.5rem;
+  font-weight: bold;
   font-family: inherit;
-  background-color: var(--slate-500);
+  background-color: var(--slate-700);
   cursor: pointer;
-  transition: box-shadow 100ms ease-in-out;
+  transition: box-shadow .1s ease-in-out, color .1s ease-in-out, background-color .1s ease-in-out;
   color: var(--slate-100);
-  margin: 10px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  border-width: 0px;
+  margin: 0.2em;
+  border-width: 0;
+  width: 1.5em;
+  height: 1.5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 button:focus,
@@ -143,14 +146,15 @@ select:hover {
   max-height: 50px;
   padding: 6px;
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  color: var(--slate-500);
+  color: var(--slate-700);
+  box-sizing: border-box; /* stop overflow when there is padding */
 }
 
 .navbar .title {
   font-size: 30px;
   font-weight: 600;
   padding: 20px;
-  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
+  box-sizing: border-box; /* stop overflow when there is padding */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -175,8 +179,9 @@ select:hover {
   align-items: center;
   width: 100%;
   height: 100%;
-  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
+  box-sizing: border-box; /* stop overflow when there is padding */
   margin: 0;
+  gap: 0.2em;
 }
 
 .topbar .item.middle {
@@ -187,7 +192,7 @@ select:hover {
   justify-content: end;
 }
 
-.topbar .item .name {
+.topbar .item #pdf-name {
   font-size: 15px;
   font-weight: 300;
   padding: 12px;
@@ -196,26 +201,62 @@ select:hover {
   white-space: nowrap;
 }
 
-.topbar .item .pagenum {
+.topbar .item #pdf-page-num {
   font-size: 15px;
   font-weight: 300;
   padding: 6px;
   padding-left: 12px;
   padding-right: 12px;
-  box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
   border-radius: 8px;
-  background-color: rgb(from var(--slate-600) r g b / 0.25);
+  background-color: rgb(from var(--slate-500) r g b / 0.25);
   width: max-content;
 }
 
-.topbar .item .close-button {
+.topbar .item #close-button {
   cursor: pointer;
-  border: none;
-  outline: none;
-  background: none;
-  font-size: 25px;
+  background-color: transparent;
+  height: 100%;
+}
+
+.topbar .item #close-button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.topbar .item #render-mode-button {
+  cursor: pointer;
+  background-color: transparent;
+  position: relative;
+  padding: 0.55em 0.8em 0.6em;
+  height: 100%;
+  box-sizing: border-box; /* stop overflow when there is padding */
+}
+
+.topbar .item #render-mode-button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.topbar .item #render-mode-button .render-mode {
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  font-size: 1.5rem;
   font-weight: bold;
-  padding-top: 3px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.topbar .item #render-mode-button .render-mode.active {
+  display: flex;
 }
 
 .app-container {
@@ -226,7 +267,7 @@ select:hover {
   width: 100%;
   height: 100%;
   padding: 20px;
-  box-sizing: border-box; /* stop overflow when there is padding and/or margin */
+  box-sizing: border-box; /* stop overflow when there is padding */
 }
 
 #upload {
@@ -234,11 +275,7 @@ select:hover {
 }
 
 #uploadBtn {
-  font-size: 20px;
   font-weight: bold;
-  padding-top: 3px;
-  padding-left: 15px;
-  padding-right: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -252,14 +289,13 @@ select:hover {
   bottom: 0;
   transform: scale(0);
   transition: transform 200ms ease-in-out;
-  width: 100vw;
-  height: 100vh;
+  width: 100svw;
+  height: 100svh;
   display: none;
   z-index: 10;
   align-items: center;
   flex-direction: column;
   box-sizing: border-box;
-  overflow: scroll;
 }
 
 #pdf-modal.active {
@@ -274,8 +310,8 @@ select:hover {
   transform: translate(-50%, -50%);
   transition: opacity 200ms ease-in-out;
   background-color: rgb(from var(--slate-700) r g b / 0.5);
-  width: 100vw;
-  height: 100vh;
+  width: 100svw;
+  height: 100svh;
   z-index: 1;
   display: none;
   opacity: 0;
@@ -299,6 +335,7 @@ select:hover {
   min-width: max-content;
   min-height: max-content;
   overflow: scroll;
+  gap: 1em;
 }
 
 canvas {
@@ -322,7 +359,7 @@ canvas {
   justify-content: start;
   align-items: center;
   flex-wrap: wrap;
-  color: var(--slate-600);
+  color: var(--slate-700);
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 20px;
@@ -343,6 +380,7 @@ canvas {
   display: flex;
   justify-self: start;
   box-sizing: border-box;
+  transition: box-shadow .1s ease-in-out;
 }
 
 #dashboard .file:hover {
@@ -372,11 +410,18 @@ canvas {
 .pdf-nav-button {
   margin: 0.4em;
   padding: 0.4em;
-  background-color: rgb(from var(--slate-500) r g b / 0.1);
-  color: var(--slate-300);
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgb(from var(--slate-700) r g b / 0.1);
+  color: var(--slate-100);
+  transition: color .1s ease-in-out, background-color .1s ease-in-out;
+}
+
+.pdf-nav-button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
 .icon-size {
