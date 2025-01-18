@@ -160,7 +160,7 @@ select:hover {
   align-items: center;
 }
 
-.topbar {
+#topbar {
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -176,9 +176,9 @@ select:hover {
   color: var(--slate-200);
 }
 
-.topbar .item {
+#topbar .item {
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
   width: 100%;
   height: 100%;
@@ -186,23 +186,24 @@ select:hover {
   margin: 0.2em;
   gap: 0.2em;
   min-width: 0;
-  grid-column: 1 / span 3;
+  grid-column: span 3;
   overflow: hidden;
 }
 
-.topbar .item.middle {
+#topbar .item.middle {
   max-width: max-content;
+  justify-content: center;
   justify-self: center;
-  grid-column: 4 / span 1;
+  grid-column: span 1;
 }
 
-.topbar .item.right {
+#topbar .item.right {
   justify-content: end;
   justify-self: end;
-  grid-column: 5 / span 3;
+  grid-column: span 3;
 }
 
-.topbar .item #pdf-name {
+#topbar .item #pdf-name {
   font-size: 15px;
   font-weight: 300;
   padding: 12px;
@@ -211,7 +212,7 @@ select:hover {
   white-space: nowrap;
 }
 
-.topbar .item #pdf-page-num {
+#topbar .item #pdf-page-num {
   font-size: 15px;
   font-weight: 300;
   padding: 6px;
@@ -226,18 +227,18 @@ select:hover {
   white-space: nowrap;
 }
 
-.topbar .item #close-button {
+#topbar .item #close-button {
   cursor: pointer;
   background-color: transparent;
 }
 
-.topbar .item #close-button:hover {
+#topbar .item #close-button:hover {
   color: var(--slate-700);
   background-color: var(--slate-100);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.topbar .item #render-mode-button {
+#topbar .item #render-mode-button {
   cursor: pointer;
   background-color: transparent;
   position: relative;
@@ -245,29 +246,37 @@ select:hover {
   box-sizing: border-box; /* stop overflow when there is padding */
 }
 
-.topbar .item #render-mode-button:hover {
+#topbar .item #render-mode-button:hover {
   color: var(--slate-700);
   background-color: var(--slate-100);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.topbar .item #render-mode-button .render-mode {
+#topbar .item #render-mode-button .render-mode {
   background-color: transparent;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  display: none;
+  display: flex;
   font-size: 1.5rem;
   font-weight: bold;
-  display: none;
+  display: flex;
   justify-content: center;
   align-items: center;
+  transform: scale(0);
+  transition: transform .5s ease-in-out, opacity .5s ease-in-out;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
 }
 
-.topbar .item #render-mode-button .render-mode.active {
-  display: flex;
+#topbar .item #render-mode-button .render-mode.active {
+  transform: scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
 }
 
 .app-container {
@@ -286,10 +295,15 @@ select:hover {
 }
 
 #uploadBtn {
-  font-weight: bold;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#uploadBtnText {
+  display: flex;
+  text-justify: center;
+  text-align: center;
 }
 
 #pdf-modal {
@@ -436,7 +450,7 @@ canvas {
 }
 
 .icon-size {
-  width: 1.5rem; /* 24px */
-  height: 1.5rem;
+  width: 1.2rem;
+  height: 1.2rem;
   padding: 0;
 }

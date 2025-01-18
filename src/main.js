@@ -1,5 +1,5 @@
 import './style.css'
-import { PDFViewer, RenderModes } from "./components/renderer"
+import { PDFViewer, RenderModes } from "./components/viewer"
 
 
 document.querySelector('#app').innerHTML = `
@@ -25,7 +25,7 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
   <div id="pdf-modal">
-    <div class="topbar" id="header">
+    <div id="topbar">
       <div class="item">
         <span id="pdf-name"></span>
       </div>
@@ -35,13 +35,35 @@ document.querySelector('#app').innerHTML = `
       <div class="item right">
         <button id="render-mode-button">
           <div id="single" class="render-mode active">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="icon-size icon icon-tabler icons-tabler-filled icon-tabler-crop-portrait"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M16 3a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3z" />
             </svg>
           </div>
           <div id="all" class="render-mode">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="icon-size icon icon-tabler icons-tabler-outline icon-tabler-spacing-vertical"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M4 20v-2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v2" />
+              <path d="M4 4v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+              <path d="M16 12h-8" />
             </svg>
           </div>
         </button>
@@ -89,9 +111,7 @@ renderModeButton.onclick = nextRenderMode;
 // file reader
 const fileReader = new FileReader();
 fileReader.onload = function (e) {
-  viewer.load(e.target.result).then(() => {
-    viewer.render()
-  });
+  viewer.open(e.target.result);
 };
 
 
@@ -167,22 +187,19 @@ function prevPage() {
 }
 
 
-function changeView(e) {
-  viewer.render(RenderModes[e.target.value]);
-}
-
-
 function nextRenderMode() {
-  viewer.nextRenderMode();
-
-  switch (viewer.currentRenderMode) {
-    case RenderModes.single:
-      renderSingle.classList.add("active");
-      renderAll.classList.remove("active");
-      break;
-    case RenderModes.all:
-      renderSingle.classList.remove("active");
-      renderAll.classList.add("active");
-      break;
+  const update = (renderMode) => {
+    switch (renderMode) {
+      case RenderModes.single:
+        renderSingle.classList.add("active");
+        renderAll.classList.remove("active");
+        break;
+      case RenderModes.all:
+        renderSingle.classList.remove("active");
+        renderAll.classList.add("active");
+        break;
+    }
   }
+
+  viewer.nextRenderMode(update);
 }
