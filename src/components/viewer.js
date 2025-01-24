@@ -1,50 +1,48 @@
 import * as pdfjsLib from "pdfjs-dist"
+import { RenderModes, RenderStates, getVisibleElements } from "./utils"
+import { PDFPageView } from "./page_view"
+import { PDFRenderQueue } from "./render_queue";
 
+
+const DEFAULT_CACHE_SIZE = 10;
 
 // PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
 
-export const RenderModes = Object.freeze({
-  single: 0,
-  all: 1
-});
-
 class PDFViewBuffer {
-  #buffer = [];
+  #buffer = new Set();
+  #size = 0;
 
-}
-
-class PDFPageView {
-  #page = null;
-  #canvas = null;
-  #isRendered = false;
-
-  constructor(canvas) {
-    this.#canvas = canvas;
+  constructor(size) {
+    this.#size = size;
   }
 
-  get page() {
-    return this.#page;
+  push(pageView) {
+    const buffer = this.#buffer;
+
+    // move the item to the end of buffer if exists
+    if (buffer.has(pageView)) {
+      buffer.delete(pageView);
+    }
+    buffer.add(pageView);
+
+    if (buffer.size > this.#size) {
+      this.#destroyFirst();
+    }
   }
 
-  set page(page) {
-    this.#page = page;
+  has(pageView) {
+    return this.#buffer.has(pageView);
   }
 
-  get canvas() {
-    return this.#canvas;
+  resize(newSize) {
   }
 
-  set canvas(canvas) {
-    this.#canvas = canvas;
-  }
+  #destroyFirst() {
+    const pageView = this.#buffer.keys().next().value;
 
-  get rendered() {
-    return this.#isRendered;
-  }
-
-  setRendered(value) {
-    this.#isRendered = value;
+    pageView?.destroy();
+    this.#buffer.delete(pageView);
   }
 }
 
@@ -61,43 +59,72 @@ export class PDFViewer {
   #currentNumPages = 0;
   container = null;
   pageNumElement = null;
+  #maxCanvasPixels = null;
+  #renderQueue = null;
 
   currentRenderMode = null;
 
-  #isRendering = false;
-
   constructor() {
-    this.#buffer = [];
-    this.#pages = [];
+    this.#maxCanvasPixels = 2 ** 25;
+    this.#renderQueue = new PDFRenderQueue(this);
+
     this.container = document.getElementById("pdf-container");
     this.pageNumElement = document.getElementById("pdf-page-num");
 
-    this.currentRenderMode = RenderModes.single;
+    this.container.addEventListener("scrollend", this.update.bind(this), {
+      passive: true,
+    });
+
+    this.#reset();
   }
 
-  open(file) {
-    this.load(file).then(() => {
-      this.render();
-    })
-  }
-
-  async load(file) {
+  open(url) {
     if (this.pdfLoadingTask) this.close();
-    this.pdfLoadingTask = pdfjsLib.getDocument({ data: file });
-    let promise = this.pdfLoadingTask.promise.then((pdf) => {
-      this.pdfDocument = pdf;
-      this.#currentNumPages = pdf.numPages;
-      pdf.getMetadata().then((metadata) => {
-        this.metadata = metadata;
-      })
-      // return new Promise((resolve) => {
-      //   resolve();
-      // })
-      return Promise.withResolvers();
+    this.pdfLoadingTask = pdfjsLib.getDocument(url);
+
+    this.pdfLoadingTask.promise.then(
+      async (pdfDocument) => {
+        await this.load(pdfDocument);
+        this.update();
+      }
+    );
+  }
+
+  get renderQueue() {
+    return this.#renderQueue;
+  }
+
+  get maxCanvasPixels() {
+    return this.#maxCanvasPixels;
+  }
+
+  async load(pdfDocument) {
+    this.pdfDocument = pdfDocument;
+    this.#currentNumPages = pdfDocument.numPages;
+    pdfDocument.getMetadata().then((metadata) => {
+      this.metadata = metadata;
     })
+
+    const pagesPromise = [];
+
+    // get the pages
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+      pagesPromise.push(pdfDocument.getPage(i));
+    }
     this.#currentPage = 1;
 
-    return promise;
+    // load the pages
+    return Promise.all(pagesPromise).then(
+      async ([...pages]) => {
+        pages.forEach((page) => {
+          this.#pages.push(new PDFPageView({
+            page,
+            pdfViewer: this,
+            renderQueue:this.#renderQueue,
+          }));
+        })
+      }
+    )
   }
 
   get currentPage() {
@@ -111,109 +138,103 @@ export class PDFViewer {
   /**
     * render a single page
     * @param param render parameters
-    * @param {number} param.pageNum page number of the to render
+    * @param {number} param.pageNum page number of the pdf to render
     * @param {number} param.scale scale of the pdf to render
-    * @param {HTMLElement} param.canvas the HTML canvas element to render to
     */
-  async renderPage({ pageNum, scale, pageView } = {}) {
-    if (!this.pdfDocument) throw new Error('No PDF to render');
-    if (!pageNum) throw new Error('No page number specified');
-    if (!pageView) throw new Error('No page view specified');
+  // async renderPage({ pageNum, scale } = {}) {
+  //   if (!this.pdfDocument) throw new Error('No PDF to render');
+  //   if (!pageNum) throw new Error('No page number specified');
+  //
+  //   // Render the page
+  //   const pageView = this.#pages[pageNum - 1];
+  //   if (scale) pageView.setScale(scale);
+  //
+  //   return pageView.render();
+  // }
+  //
+  // #renderSingle(reset = false) {
+  //   if (!this.pdfDocument) throw new Error('No PDF to render');
+  //   if (reset) this.container.childNodes.forEach((node) => node.remove());
+  //
+  //   this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
+  //   this.renderPage({
+  //     pageNum: this.#currentPage,
+  //   });
+  // }
+  //
+  // #renderAll(reset = false) {
+  //   if (!this.pdfDocument) throw new Error('No PDF to render');
+  //   if (reset) this.container.childNodes.forEach((node) => node.remove());
+  //
+  //   let pageNum = 0;
+  //
+  //   const renderNext = async () => {
+  //     if (pageNum >= this.#currentNumPages) return;
+  //     pageNum++;
+  //     await this.renderPage({ pageNum }).then(renderNext)
+  //   }
+  //
+  //   renderNext();
+  // }
+  //
+  // render() {
+  //   switch (this.currentRenderMode) {
+  //     case RenderModes.single:
+  //       this.#currentPage = 1;
+  //       this.#renderSingle(true);
+  //       break;
+  //     case RenderModes.all:
+  //       this.#renderAll(true);
+  //       break;
+  //   }
+  // }
 
-    const { canvas } = pageView;
+  #updateBuffer(pageView) {
+    this.#buffer.push(pageView);
+  }
 
-    const context = canvas.getContext('2d');
+  update() {
+    const { visible, preRenderViews } = this.#getVisiblePageViews();
 
-    // Load the page.
-    return this.pdfDocument.getPage(pageNum).then((page) => {
-      const defaultScale = 0.9;
-      scale = scale ?? defaultScale;
-      const viewport = page.getViewport({ scale });
+    this.currentPage = visible[0].id;
+    this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
 
-      // To make the render clearer
-      // if we just update the canvas and the render context acccording to the
-      // viewport values, the texts will not be clear
-      const { width, height } = viewport;
-      const outputScale = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(width * outputScale);
-      canvas.height = Math.floor(height * outputScale);
-      const { style } = canvas;
-      style.width = Math.floor(width) + "px";
-      style.height = Math.floor(height) + "px";
+    visible.forEach(async (view) => {
+      if (view.renderState === RenderStates.rendering) return;
+      if (view.renderState === RenderStates.paused) {
+        view.resume();
+        return;
+      }
+      await view.render(this.#updateBuffer.bind(this));
+    })
 
-      const transform = outputScale !== 1
-            ? [outputScale, 0, 0, outputScale, 0, 0]
-            : null;
-
-      const renderContext = {
-        canvasContext: context,
-        transform,
-        viewport,
-      };
-
-      pageView.page = page;
-
-      return page.render(renderContext).promise.then(() => {
-        console.log('Page rendered!');
-        pageView.setRendered(true);
-      })
+    preRenderViews.forEach(async (view) => {
+      if (view.renderState === RenderStates.rendering) return;
+      if (view.renderState === RenderStates.paused) {
+        view.resume();
+        return;
+      }
+      await view.render(this.#updateBuffer.bind(this));
     })
   }
 
-  async #renderSingle() {
-    if (!this.pdfDocument) throw new Error('No PDF to render');
+  jumpToPage(pageNum) {
+  }
 
-    if (this.#pages.length !== 1) {
-      this.#pages = [];
-      const newCanvas = document.createElement("canvas");
-      newCanvas.id = `pdf`
-      this.container.appendChild(newCanvas);
-      this.#pages.push(new PDFPageView(newCanvas));
+  #getVisiblePageViews() {
+    const views = (this.currentRenderMode === RenderModes.single) ?
+      [this.#pages[this.currentPage - 1]] :
+      this.#pages;
+
+    if (this.currentRenderMode === RenderModes.single) {
+      this.container.childNodes.forEach((node) => node.remove());
+      views.forEach((view) => this.container.appendChild(view.pageContainer));
     }
 
-    this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
-    return this.renderPage({
-      pageNum: this.#currentPage,
-      pageView: this.#pages[0],
+    return getVisibleElements({
+      scrollElement: this.container,
+      views,
     });
-  }
-
-  async #renderAll() {
-    if (!this.pdfDocument) throw new Error('No PDF to render');
-
-    let pageNum = 0;
-
-    const newPageView = () => {
-      if (pageNum >= this.#currentNumPages) return;
-      pageNum++;
-      const newCanvas = document.createElement("canvas");
-      newCanvas.id = `pdf-${pageNum}`
-      this.container.appendChild(newCanvas);
-      const pageView = new PDFPageView(newCanvas);
-      this.#pages.push(pageView);
-
-      return this.renderPage({ pageNum, pageView }).then(newPageView);
-    }
-
-    return newPageView();
-  }
-
-  async render(renderMode) {
-    if (renderMode !== undefined && renderMode !== null && renderMode !== this.currentRenderMode) {
-      this.#pages.forEach((pageView) => pageView.canvas.remove());
-      this.#pages = [];
-      this.#buffer.forEach((canvas) => canvas.remove());
-      this.container.innerHTML = "";
-      this.currentRenderMode = renderMode;
-    }
-
-    switch (this.currentRenderMode) {
-      case RenderModes.single:
-        this.#currentPage = 1;
-        return this.#renderSingle();
-      case RenderModes.all:
-        return this.#renderAll();
-    }
   }
 
   async close() {
@@ -224,12 +245,10 @@ export class PDFViewer {
     promises.push(this.pdfLoadingTask.destroy());
     this.pdfLoadingTask = null;
 
-    this.#pages.forEach((pageView) => pageView.canvas.remove());
-    this.#pages = [];
-    this.#buffer.forEach((canvas) => canvas.remove());
+    this.#reset();
     this.pdfDocument.destroy();
     this.pdfDocument = null;
-    this.container.innerHTML = "";
+    this.container.childNodes.forEach((node) => node.remove());
 
     await Promise.all(promises);
   }
@@ -242,7 +261,9 @@ export class PDFViewer {
       return;
     }
     this.#currentPage++;
-    this.#renderSingle();
+
+    this.container.firstElementChild.remove();
+    this.update();
   }
 
   prevPage() {
@@ -254,17 +275,35 @@ export class PDFViewer {
       return;
     }
     this.#currentPage--;
-    this.#renderSingle();
+
+    this.container.firstElementChild.remove();
+    this.update();
   }
 
   nextRenderMode(callback) {
     const modes = Object.keys(RenderModes);
     const newRenderMode = (this.currentRenderMode + 1) % modes.length;
+    this.currentRenderMode = newRenderMode;
     if (callback) callback(newRenderMode);
 
-    this.render(newRenderMode);
+    this.container.childNodes.forEach((node) => node.remove());
+    if (this.currentRenderMode === RenderModes.all) {
+      this.#pages.forEach(
+        (page) => {
+          this.container.appendChild(page.pageContainer);
+        }
+      );
+    } else {
+      this.container.appendChild(this.#pages[this.currentPage - 1].pageContainer);
+    }
+
+    this.update();
   }
 
-  reset() {
+  #reset() {
+    this.#buffer = new PDFViewBuffer(DEFAULT_CACHE_SIZE);
+    this.#pages = [];
+
+    this.currentRenderMode = RenderModes.single;
   }
 };

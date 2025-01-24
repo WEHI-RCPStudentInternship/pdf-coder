@@ -135,6 +135,10 @@ select:hover {
 /*   } */
 /* } */
 
+.page {
+  flex-shrink: 0;
+}
+
 .navbar {
   position: relative;
   display: flex;
