@@ -75,6 +75,8 @@ export class PDFViewer {
   #currentNumPages = 0;
   container = null;
   pageNumElement = null;
+  pageInputElement = null;
+  totalPageNumElement = null;
   #maxCanvasPixels = null;
   #renderQueue = null;
 
@@ -85,9 +87,17 @@ export class PDFViewer {
     this.#renderQueue = new PDFRenderQueue(this);
 
     this.container = document.getElementById("pdf-container");
-    this.pageNumElement = document.getElementById("pdf-page-num");
+    this.pageNumElement = document.getElementById("page-num");
+    this.pageInputElement = document.getElementById("page-input");
+    this.totalPageNumElement = document.getElementById("total-page-num");
 
-    // event listeners
+    this.bindEvents();
+
+    this.#reset();
+  }
+
+
+  bindEvents() {
     const onScrollEnd = () => {
       if (this.currentRenderMode === RenderModes.single) return;
       this.update();
@@ -96,8 +106,33 @@ export class PDFViewer {
       passive: true,
     });
 
-    this.#reset();
+    const onInputChange = (e) => {
+      e.target.blur();
+
+      const inputLength = e.target.value.length;
+
+      if (
+        inputLength === 0 ||
+        parseInt(e.target.value) > this.#currentNumPages
+      ) {
+        this.pageInputElement.value = this.currentPage;
+
+        const len = this.pageInputElement.value.length;
+        const style = window.getComputedStyle(e.target);
+        const minWidth = parseInt(style.minWidth),
+          maxWidth = parseInt(style.maxWidth);
+
+        e.target.style.width = Math.min((minWidth * len), maxWidth) + 'px';
+        return;
+      }
+
+      this.jumpToPage(parseInt(e.target.value));
+    }
+    this.pageInputElement.addEventListener(
+      "change", onInputChange.bind(this), { passive: true }
+    );
   }
+
 
   /**
     * open the document - to be changed when we connects with the backend
@@ -115,6 +150,7 @@ export class PDFViewer {
     );
   }
 
+
   get renderQueue() {
     return this.#renderQueue;
   }
@@ -122,6 +158,7 @@ export class PDFViewer {
   get maxCanvasPixels() {
     return this.#maxCanvasPixels;
   }
+
 
   /**
     * load the document
@@ -156,6 +193,7 @@ export class PDFViewer {
     )
   }
 
+
   get currentPage() {
     return this.#currentPage;
   }
@@ -163,6 +201,7 @@ export class PDFViewer {
   set currentPage(pageNum) {
     this.#currentPage = pageNum;
   }
+
 
   /**
     * update the buffer
@@ -172,6 +211,7 @@ export class PDFViewer {
     this.#buffer.push(pageView);
   }
 
+
   /**
     * update the viewer state
     */
@@ -179,7 +219,8 @@ export class PDFViewer {
     const { visible, preRenderViews } = this.#getVisiblePageViews();
 
     this.currentPage = visible[0].id;
-    this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
+    this.pageInputElement.value = this.#currentPage
+    this.totalPageNumElement.innerHTML = this.#currentNumPages;
 
     [...visible, ...preRenderViews].forEach(
       async (pageView) => {
@@ -199,19 +240,30 @@ export class PDFViewer {
     )
   }
 
+
   /**
     * move the focus to the specified page
     * @param {number=} pageNum the page number to move to
     */
   jumpToPage(pageNum) {
-    const page =
-      this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
+    if (pageNum > this.#currentNumPages) return;
 
-    // scroll the container to page
-    this.container.scrollTop =
-      page.offsetTop -
-      // move the page slightly down
-      parseInt(window.getComputedStyle(this.container).gap) / 2;
+    switch (this.currentRenderMode) {
+      case RenderModes.single:
+        this.currentPage = pageNum;
+        this.update();
+        break;
+      case RenderModes.all:
+        const page =
+          this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
+
+        // scroll the container to page
+        this.container.scrollTop =
+          page.offsetTop -
+          // move the page slightly down
+        parseInt(window.getComputedStyle(this.container).gap) / 2;
+        break;
+    }
   }
 
 
@@ -253,6 +305,7 @@ export class PDFViewer {
     }
   }
 
+
   async close() {
     if (!this.pdfLoadingTask) return;
 
@@ -269,6 +322,7 @@ export class PDFViewer {
     await Promise.all(promises);
   }
 
+
   nextPage() {
     if (this.currentRenderMode !== RenderModes.single) return;
     if (this.#currentPage === this.#currentNumPages) return;
@@ -281,6 +335,7 @@ export class PDFViewer {
     this.container.firstElementChild.remove();
     this.update();
   }
+
 
   prevPage() {
     if (this.currentRenderMode !== RenderModes.single) return;
@@ -296,6 +351,7 @@ export class PDFViewer {
     this.update();
   }
 
+
   /**
     * change to the next available render mode
     * @param {Function} callback
@@ -307,6 +363,7 @@ export class PDFViewer {
 
     this.updateRenderMode(newRenderMode);
   }
+
 
   /**
     * update render mode
@@ -328,6 +385,7 @@ export class PDFViewer {
 
     this.update();
   }
+
 
   #reset() {
     this.#buffer = new PDFViewBuffer(DEFAULT_CACHE_SIZE);

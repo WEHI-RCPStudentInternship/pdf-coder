@@ -155,7 +155,7 @@ select:hover {
 }
 
 .navbar .title {
-  font-size: 30px;
+  font-size: 2rem;
   font-weight: 600;
   padding: 20px;
   box-sizing: border-box; /* stop overflow when there is padding */
@@ -208,7 +208,7 @@ select:hover {
 }
 
 #topbar .item #pdf-name {
-  font-size: 15px;
+  font-size: 1rem;
   font-weight: 300;
   padding: 12px;
   overflow: hidden;
@@ -216,15 +216,40 @@ select:hover {
   white-space: nowrap;
 }
 
-#topbar .item #pdf-page-num {
-  font-size: 15px;
+#topbar .item #page-num {
+  font-size: 1rem;
   font-weight: 300;
   padding: 6px;
-  padding-left: 12px;
-  padding-right: 12px;
   box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
   border-radius: 8px;
   background-color: rgb(from var(--slate-500) r g b / 0.25);
+  width: max-content;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#topbar .item #page-num #page-input {
+  width: 2.5em;
+  max-width: 100%;
+  background-color: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
+  text-align: end;
+}
+
+#topbar .item #total-page-num {
+  font-size: 1rem;
+  font-weight: 300;
   width: max-content;
   overflow: hidden;
   text-overflow: hidden;
@@ -401,7 +426,7 @@ canvas {
 #dashboard .file {
   cursor: pointer;
   font-weight: 400;
-  font-size: 16px;
+  font-size: 1rem;
   border-radius: 8px;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   padding: 10px;

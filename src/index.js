@@ -29,7 +29,11 @@ document.querySelector('#app').innerHTML = `
         <span id="pdf-name"></span>
       </div>
       <div class="item middle">
-        <span id="pdf-page-num"></span>
+        <div id="page-num">
+          <input type="text" patter="[0-9]" id="page-input" />
+        </div>
+        &#47;
+        <span id="total-page-num"></span>
       </div>
       <div class="item right">
         <button id="render-mode-button">
