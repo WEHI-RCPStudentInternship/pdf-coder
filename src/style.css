@@ -174,8 +174,8 @@ select:hover {
   align-content: center;
   background-color: rgb(from var(--slate-800) r g b / 0.8);
   width: 100%;
-  height: 40px;
-  max-height: 50px;
+  height: 2em;
+  max-height: 3em;
   padding: 6px;
   color: var(--slate-200);
 }
@@ -208,7 +208,7 @@ select:hover {
 }
 
 #topbar .item #pdf-name {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 300;
   padding: 12px;
   overflow: hidden;
@@ -217,7 +217,7 @@ select:hover {
 }
 
 #topbar .item #page-num {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 300;
   padding: 6px;
   box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
@@ -248,7 +248,7 @@ select:hover {
 }
 
 #topbar .item #total-page-num {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 300;
   width: max-content;
   overflow: hidden;
@@ -258,6 +258,9 @@ select:hover {
 
 #topbar .item #close-button {
   cursor: pointer;
+  width: 1em;
+  height: 1em;
+  padding: 0.45em 0.6em 0.6em;
   background-color: transparent;
 }
 
@@ -271,7 +274,9 @@ select:hover {
   cursor: pointer;
   background-color: transparent;
   position: relative;
-  padding: 0.55em 0.8em 0.6em;
+  padding: 0.5em 0.6em 0.6em;
+  width: 1em;
+  height: 1em;
   box-sizing: border-box; /* stop overflow when there is padding */
 }
 

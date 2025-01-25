@@ -11,7 +11,7 @@ import * as pdfjsLib from "pdfjs-dist"
   * @typedef {import("pdfjs-dist").RenderTask} RenderTask
   */
 
-const DEFAULT_SCALE = 0.9
+const DEFAULT_SCALE = 1;
 
 export class PDFPageView {
   #page = null;
