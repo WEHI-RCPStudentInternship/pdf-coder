@@ -7,6 +7,10 @@ import {
 import * as pdfjsLib from "pdfjs-dist"
 
 
+/**
+  * @typedef {import("pdfjs-dist").RenderTask} RenderTask
+  */
+
 const DEFAULT_SCALE = 0.9
 
 export class PDFPageView {
@@ -31,12 +35,13 @@ export class PDFPageView {
     this.resume = null;
     this.renderTask = null;
 
+    // creating the page
     const pageContainer = document.createElement("div");
     pageContainer.className = "page";
     pageContainer.setAttribute("data-page-num", this.id);
     this.pageContainer = pageContainer;
 
-    this.#setRenderContext();
+    this.setRenderContext();
   }
 
   get page() {
@@ -67,11 +72,14 @@ export class PDFPageView {
     this.#scale = scale;
   }
 
-  #setRenderContext() {
+  /**
+    * setting the render context of the page view
+    */
+  setRenderContext() {
     this.reset();
 
     const canvas = document.createElement("canvas");
-    canvas.id = `pdf-${this.#page.pageNumber}`
+    canvas.id = "pdf";
 
     this.#canvas = canvas;
 
@@ -119,8 +127,11 @@ export class PDFPageView {
     };
   }
 
+  /**
+    * render the page view
+    * @param {Function=} callback callback function after render finish
+    */
   render(callback = null) {
-    if (this.renderState === RenderStates.finished) return;
     if (this.renderState !== RenderStates.initial) {
       this.reset();
     }
@@ -130,12 +141,13 @@ export class PDFPageView {
       throw new Error("pdfPage is not loaded");
     }
 
-    if (!this.canvas) this.#setRenderContext();
+    if (!this.canvas) this.setRenderContext();
 
     this.renderState = RenderStates.rendering;
 
     const onContinueCallback = (cont) => {
-      if (!this.#renderQueue) {
+      // change to PDFRenderQueue if we use it
+      if (!this.#pdfViewer) {
         this.renderState = RenderStates.paused;
         this.resume = () => {
           this.renderState = RenderStates.running;
@@ -165,6 +177,11 @@ export class PDFPageView {
     );
   }
 
+  /**
+    * reset the page view
+    * @param {Object} options reset options
+    * @param {boolean} [options.keepCanvas=false] whether to keep the canvas
+    */
   reset({
     keepCanvas = false
   } = {}) {
@@ -177,6 +194,12 @@ export class PDFPageView {
     }
   }
 
+  /**
+    * finishing the render task
+    * @param {RenderTask} renderTask the render task
+    * @param {Function=} callback the callback function
+    * @param {Error=} error the render error
+    */
   async #finishRender(renderTask, callback = null, error = null) {
     if (renderTask === this.renderTask) this.renderTask = null;
 

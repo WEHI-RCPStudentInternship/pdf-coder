@@ -21,7 +21,7 @@ class PDFRenderQueue {
   }
 
   render(pageView) {
-    switch (pageView) {
+    switch (pageView.renderState) {
       case RenderStates.finished:
         return;
       case RenderStates.paused:

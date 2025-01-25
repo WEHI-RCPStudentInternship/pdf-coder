@@ -4,6 +4,15 @@ import { PDFPageView } from "./page_view"
 import { PDFRenderQueue } from "./render_queue";
 
 
+/**
+  * @typedef {import("pdfjs-dist").PDFDocumentProxy} PDFDocumentProxy
+  */
+/**
+  * @typedef {Object} VisiblePageViews
+  * @property {PDFPageView[]} visible page views to render
+  * @property {PDFPageView[]} preRenderViews page views to pre render
+  */
+
 const DEFAULT_CACHE_SIZE = 10;
 
 // PDF.js worker
@@ -17,6 +26,10 @@ class PDFViewBuffer {
     this.#size = size;
   }
 
+  /**
+    * add new page view to the buffer and remove old items if size exceeded
+    * @param {PDFPageView} pageView the page view to add
+    */
   push(pageView) {
     const buffer = this.#buffer;
 
@@ -38,6 +51,9 @@ class PDFViewBuffer {
   resize(newSize) {
   }
 
+  /**
+    * destroy the first item in the buffer
+    */
   #destroyFirst() {
     const pageView = this.#buffer.keys().next().value;
 
@@ -71,13 +87,22 @@ export class PDFViewer {
     this.container = document.getElementById("pdf-container");
     this.pageNumElement = document.getElementById("pdf-page-num");
 
-    this.container.addEventListener("scrollend", this.update.bind(this), {
+    // event listeners
+    const onScrollEnd = () => {
+      if (this.currentRenderMode === RenderModes.single) return;
+      this.update();
+    }
+    this.container.addEventListener("scrollend", onScrollEnd.bind(this), {
       passive: true,
     });
 
     this.#reset();
   }
 
+  /**
+    * open the document - to be changed when we connects with the backend
+    * @param {string} url the string of the url object
+    */
   open(url) {
     if (this.pdfLoadingTask) this.close();
     this.pdfLoadingTask = pdfjsLib.getDocument(url);
@@ -98,6 +123,10 @@ export class PDFViewer {
     return this.#maxCanvasPixels;
   }
 
+  /**
+    * load the document
+    * @param {PDFDocumentProxy} pdfDocument the pdf document
+    */
   async load(pdfDocument) {
     this.pdfDocument = pdfDocument;
     this.#currentNumPages = pdfDocument.numPages;
@@ -136,105 +165,92 @@ export class PDFViewer {
   }
 
   /**
-    * render a single page
-    * @param param render parameters
-    * @param {number} param.pageNum page number of the pdf to render
-    * @param {number} param.scale scale of the pdf to render
+    * update the buffer
+    * @param {PDFPageView} pageView the page view to update
     */
-  // async renderPage({ pageNum, scale } = {}) {
-  //   if (!this.pdfDocument) throw new Error('No PDF to render');
-  //   if (!pageNum) throw new Error('No page number specified');
-  //
-  //   // Render the page
-  //   const pageView = this.#pages[pageNum - 1];
-  //   if (scale) pageView.setScale(scale);
-  //
-  //   return pageView.render();
-  // }
-  //
-  // #renderSingle(reset = false) {
-  //   if (!this.pdfDocument) throw new Error('No PDF to render');
-  //   if (reset) this.container.childNodes.forEach((node) => node.remove());
-  //
-  //   this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
-  //   this.renderPage({
-  //     pageNum: this.#currentPage,
-  //   });
-  // }
-  //
-  // #renderAll(reset = false) {
-  //   if (!this.pdfDocument) throw new Error('No PDF to render');
-  //   if (reset) this.container.childNodes.forEach((node) => node.remove());
-  //
-  //   let pageNum = 0;
-  //
-  //   const renderNext = async () => {
-  //     if (pageNum >= this.#currentNumPages) return;
-  //     pageNum++;
-  //     await this.renderPage({ pageNum }).then(renderNext)
-  //   }
-  //
-  //   renderNext();
-  // }
-  //
-  // render() {
-  //   switch (this.currentRenderMode) {
-  //     case RenderModes.single:
-  //       this.#currentPage = 1;
-  //       this.#renderSingle(true);
-  //       break;
-  //     case RenderModes.all:
-  //       this.#renderAll(true);
-  //       break;
-  //   }
-  // }
-
   #updateBuffer(pageView) {
     this.#buffer.push(pageView);
   }
 
+  /**
+    * update the viewer state
+    */
   update() {
     const { visible, preRenderViews } = this.#getVisiblePageViews();
 
     this.currentPage = visible[0].id;
     this.pageNumElement.innerHTML = `${this.#currentPage} / ${this.#currentNumPages}`;
 
-    visible.forEach(async (view) => {
-      if (view.renderState === RenderStates.rendering) return;
-      if (view.renderState === RenderStates.paused) {
-        view.resume();
-        return;
+    [...visible, ...preRenderViews].forEach(
+      async (pageView) => {
+        switch (pageView.renderState) {
+          case RenderStates.finished:
+            return;
+          case RenderStates.paused:
+            pageView.resume();
+            break;
+          case RenderStates.rendering:
+            break;
+          case RenderStates.initial:
+            await pageView.render(this.#updateBuffer.bind(this));
+            break;
+        }
       }
-      await view.render(this.#updateBuffer.bind(this));
-    })
-
-    preRenderViews.forEach(async (view) => {
-      if (view.renderState === RenderStates.rendering) return;
-      if (view.renderState === RenderStates.paused) {
-        view.resume();
-        return;
-      }
-      await view.render(this.#updateBuffer.bind(this));
-    })
+    )
   }
 
+  /**
+    * move the focus to the specified page
+    * @param {number=} pageNum the page number to move to
+    */
   jumpToPage(pageNum) {
+    const page =
+      this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
+
+    // scroll the container to page
+    this.container.scrollTop =
+      page.offsetTop -
+      // move the page slightly down
+      parseInt(window.getComputedStyle(this.container).gap) / 2;
   }
 
+
+  /**
+    * getting the visible pages and some pages to pre render
+    * @returns {VisiblePageViews} The visible and pre render page views
+    */
   #getVisiblePageViews() {
-    const views = (this.currentRenderMode === RenderModes.single) ?
-      [this.#pages[this.currentPage - 1]] :
-      this.#pages;
+    switch (this.currentRenderMode) {
+      case RenderModes.single:
+        const visible = [this.#pages[this.currentPage - 1]];
+        const preRenderViews = [];
 
-    if (this.currentRenderMode === RenderModes.single) {
-      this.container.childNodes.forEach((node) => node.remove());
-      views.forEach((view) => this.container.appendChild(view.pageContainer));
+        if (this.currentPage - 1 >= 1) {
+          preRenderViews.push(this.#pages[this.currentPage - 2]);
+        }
+        if (this.currentPage + 1 <= this.#currentNumPages) {
+          preRenderViews.push(this.#pages[this.currentPage]);
+        }
+
+        if (this.currentRenderMode === RenderModes.single) {
+          Array.from(this.container.childNodes).forEach((node) => node.remove());
+          visible.forEach(
+            (view) => this.container.appendChild(view.pageContainer)
+          );
+        }
+
+        return {
+          visible,
+          preRenderViews
+        }
+      case RenderModes.all:
+        const views = this.#pages;
+
+        return getVisibleElements({
+          scrollElement: this.container,
+          views,
+        });
     }
-
-    return getVisibleElements({
-      scrollElement: this.container,
-      views,
-    });
   }
 
   async close() {
@@ -248,7 +264,7 @@ export class PDFViewer {
     this.#reset();
     this.pdfDocument.destroy();
     this.pdfDocument = null;
-    this.container.childNodes.forEach((node) => node.remove());
+    Array.from(this.container.childNodes).forEach((node) => node.remove());
 
     await Promise.all(promises);
   }
@@ -280,21 +296,34 @@ export class PDFViewer {
     this.update();
   }
 
+  /**
+    * change to the next available render mode
+    * @param {Function} callback
+    */
   nextRenderMode(callback) {
     const modes = Object.keys(RenderModes);
     const newRenderMode = (this.currentRenderMode + 1) % modes.length;
-    this.currentRenderMode = newRenderMode;
     if (callback) callback(newRenderMode);
 
-    this.container.childNodes.forEach((node) => node.remove());
+    this.updateRenderMode(newRenderMode);
+  }
+
+  /**
+    * update render mode
+    * @param {keyof RenderModes} renderMode
+    */
+  updateRenderMode(renderMode) {
+    this.currentRenderMode = renderMode;
+
+    Array.from(this.container.childNodes).forEach((node) => node.remove());
     if (this.currentRenderMode === RenderModes.all) {
       this.#pages.forEach(
         (page) => {
           this.container.appendChild(page.pageContainer);
         }
       );
-    } else {
-      this.container.appendChild(this.#pages[this.currentPage - 1].pageContainer);
+
+      this.jumpToPage();
     }
 
     this.update();

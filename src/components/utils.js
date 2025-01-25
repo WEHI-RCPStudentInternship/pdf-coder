@@ -1,3 +1,5 @@
+import { PDFPageView } from "./page_view.js";
+
 const RenderModes = {
   single: 0,
   all: 1
@@ -11,6 +13,10 @@ const RenderStates = {
   finished: 3,
 }
 
+/**
+  * use binary search to find the first visible page
+  * @param {PDFPageView} views
+  */
 function binarySearchFirstPageView(views, condition, start = 0) {
   let minIdx = start;
   let maxIdx = views.length - 1;
@@ -34,6 +40,14 @@ function binarySearchFirstPageView(views, condition, start = 0) {
   return minIdx;
 }
 
+
+/**
+  * @typedef {import("./viewer.js").VisiblePageViews} VisiblePageViews
+  */
+/**
+  * getting the visible pages and some pages to pre render
+  * @returns {VisiblePageViews} The visible and pre render elements
+  */
 function getVisibleElements({
   scrollElement,
   views,
@@ -75,6 +89,7 @@ function getVisibleElements({
   }
 
   // backtrack to find visible views and pre render views
+  // probably unnecessary but just to be sure
   for (let i = firstVisiblePageIdx - 1; i >= 0; i--) {
     if (isElementVisibleFromTop(views[i])) {
       visible.push(views[i]);
