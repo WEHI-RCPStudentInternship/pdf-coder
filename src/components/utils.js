@@ -70,16 +70,42 @@ function getVisibleElements({
     return elTop < bottom;
   }
 
-  const visible = [];
+  /**
+    * get the percentage of a page view that is shown
+    * @param {PDFPageView} pageView the page view
+    */
+  function getViewPercentage(pageView) {
+    const page = pageView.pageContainer;
+    const viewHeight = page.clientHeight;
+    const viewTop = page.offsetTop + page.clientTop;
+    const viewBottom = viewTop + page.clientHeight;
+
+    const hiddenHeight =
+      Math.max(0, top - viewTop) + Math.max(0, viewBottom - bottom);
+
+    const fractionHeight = (viewHeight - hiddenHeight) / viewHeight;
+
+    // bitwise OR to convert float to int
+    return (fractionHeight * 100) | 0;
+  }
+
+  let visible = [];
   const preRenderViews = [];
 
   const firstVisiblePageIdx = binarySearchFirstPageView(views, isElementVisibleFromTop);
-  visible.push(views[firstVisiblePageIdx]);
+  visible.push({
+    view: views[firstVisiblePageIdx],
+    percent: getViewPercentage(views[firstVisiblePageIdx]),
+  });
 
   // find subsequent visible page views and pre render view
   for (let i = firstVisiblePageIdx + 1; i < views.length; i++) {
     if (isElementVisibleFromBottom(views[i])) {
-      visible.push(views[i]);
+      const percent = getViewPercentage(views[i]);
+      visible.push({
+        view: views[i],
+        percent,
+      });
       continue;
     }
 
@@ -92,7 +118,11 @@ function getVisibleElements({
   // probably unnecessary but just to be sure
   for (let i = firstVisiblePageIdx - 1; i >= 0; i--) {
     if (isElementVisibleFromTop(views[i])) {
-      visible.push(views[i]);
+      const percent = getViewPercentage(views[i]);
+      visible.push({
+        view: views[i],
+        percent,
+      });
       continue;
     }
 
@@ -102,7 +132,15 @@ function getVisibleElements({
   }
 
   if (sortByVisibility) {
+    visible.sort((a, b) => {
+      const pc = a.percent - b.percent;
+      if (Math.abs(pc) > 0.001) {
+        return -pc;
+      }
+      return a.id - b.id; // ensure stability
+    })
   }
+  visible = visible.map((view) => view.view);
 
   return { visible, preRenderViews };
 }
