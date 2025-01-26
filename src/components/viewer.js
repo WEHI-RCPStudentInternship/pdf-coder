@@ -382,8 +382,6 @@ export class PDFViewer {
 
       this.jumpToPage();
     }
-
-    this.update();
   }
 
 

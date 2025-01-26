@@ -103,7 +103,7 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  /* outline: 4px auto -webkit-focus-ring-color; */
 }
 
 select {
@@ -391,8 +391,6 @@ select:hover {
   height: 100%;
   padding: 10px;
   box-sizing: border-box;
-  min-width: max-content;
-  min-height: max-content;
   overflow: scroll;
   gap: 1em;
 }
