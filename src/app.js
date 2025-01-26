@@ -3,18 +3,34 @@ import { RenderModes } from "./components/utils"
 
 
 const App = {
+  /** @type {HTMLElement} **/
   uploadElement: null,
   // openModalButton: null,
+  /** @type {HTMLElement} **/
   pdfModal: null,
+  /** @type {HTMLElement} **/
   overlay: null,
+  /** @type {HTMLElement} **/
   closeModalButton: null,
+  /** @type {HTMLElement} **/
   dashboard: null,
+  /** @type {HTMLElement} **/
   prevButton: null,
+  /** @type {HTMLElement} **/
   nextButton: null,
+  /** @type {HTMLElement} **/
   renderModeButton: null,
+  /** @type {HTMLElement} **/
   renderSingle: null,
+  /** @type {HTMLElement} **/
   renderAll: null,
-  viewer: null,
+  /** @type {HTMLElement} **/
+  prevPageButton: null,
+  /** @type {HTMLElement} **/
+  nextPageButton: null,
+  /** @type {PDFViewer} **/
+  pdfViewer: null,
+  /** @type {string} **/
   fileName: null,
 
 
@@ -29,11 +45,13 @@ const App = {
     this.prevButton = document.getElementById("prev");
     this.nextButton = document.getElementById("next");
     this.renderModeButton = document.getElementById("render-mode-button");
-    this.renderSingle = document.getElementById("single");
     this.renderAll = document.getElementById("all");
+    this.renderSingle = document.getElementById("single");
+    this.prevPageButton = document.getElementById("prev");
+    this.nextPageButton = document.getElementById("next");
     this.fileName = document.getElementById("pdf-name");
 
-    this.viewer = new PDFViewer();
+    this.pdfViewer = new PDFViewer();
 
     this.bindEvents();
   },
@@ -41,6 +59,14 @@ const App = {
 
   run() {
     this.initialize();
+
+    if (this.pdfViewer.currentRenderMode === RenderModes.all) {
+      this.renderAll.classList.add("active");
+      this.nextPageButton.classList.add("clockwise-90");
+      this.prevPageButton.classList.add("clockwise-90");
+    } else {
+      this.renderSingle.classList.add("active");
+    }
   },
 
 
@@ -75,7 +101,7 @@ const App = {
 
     this.fileName.innerHTML = filename;
 
-    this.viewer.open(url);
+    this.pdfViewer.open(url);
 
     this.pdfModal.classList.add("active");
     this.overlay.classList.add("active");
@@ -87,7 +113,7 @@ const App = {
     this.pdfModal.classList.remove("active");
     this.overlay.classList.remove("active");
 
-    this.viewer.close();
+    this.pdfViewer.close();
   },
 
 
@@ -109,14 +135,14 @@ const App = {
 
 
   nextPage() {
-    if (!this.viewer) return;
-    this.viewer.nextPage();
+    if (!this.pdfViewer) return;
+    this.pdfViewer.nextPage();
   },
 
 
   prevPage() {
-    if (!this.viewer) return;
-    this.viewer.prevPage();
+    if (!this.pdfViewer) return;
+    this.pdfViewer.prevPage();
   },
 
 
@@ -126,15 +152,19 @@ const App = {
         case RenderModes.single:
           this.renderSingle.classList.add("active");
           this.renderAll.classList.remove("active");
+          this.nextPageButton.classList.remove("clockwise-90");
+          this.prevPageButton.classList.remove("clockwise-90");
           break;
         case RenderModes.all:
           this.renderSingle.classList.remove("active");
           this.renderAll.classList.add("active");
+          this.nextPageButton.classList.add("clockwise-90");
+          this.prevPageButton.classList.add("clockwise-90");
           break;
       }
     }
 
-    this.viewer.nextRenderMode(update);
+    this.pdfViewer.nextRenderMode(update);
   }
 }
 

@@ -5,6 +5,8 @@ import {
   roundToDivide
 } from "./utils";
 import * as pdfjsLib from "pdfjs-dist"
+import { PDFViewer } from "./viewer";
+import { PDFRenderQueue } from "./render_queue";
 
 
 /**
@@ -14,13 +16,21 @@ import * as pdfjsLib from "pdfjs-dist"
 const DEFAULT_SCALE = 1;
 
 export class PDFPageView {
+  /** @type {PDFPageView} **/
   #page = null;
+  /** @type {PDFViewer} **/
   #pdfViewer = null;
+  /** @type {PDFRenderQueue} **/
   #renderQueue = null;
+  /** @type {HTMLElement} **/
   #canvas = null;
+  /** @type {HTMLElement} **/
   pageContainer = null;
+  /** @type {number} **/
   #scale = null;
+  /** @type {RenderStates} **/
   #renderState = RenderStates.initial;
+  /** @type {Error} **/
   #renderError = null;
   #renderContext = null;
 
@@ -68,9 +78,15 @@ export class PDFPageView {
     this.#canvas = canvas;
   }
 
-  setScale(scale) {
-    this.#scale = scale;
+
+  get scale() {
+    return this.#scale;
   }
+
+  set scale(newScale) {
+    this.#scale = newScale;
+  }
+
 
   /**
     * setting the render context of the page view

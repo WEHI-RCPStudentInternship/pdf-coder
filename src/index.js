@@ -29,27 +29,24 @@ document.querySelector('#app').innerHTML = `
         <span id="pdf-name"></span>
       </div>
       <div class="item middle">
+        <button id="prev" class="pdf-nav-button">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <div id="page-num">
           <input type="text" patter="[0-9]" id="page-input" />
         </div>
         &#47;
         <span id="total-page-num"></span>
+        <button id="next" class="pdf-nav-button">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+          </svg>
+        </button>
       </div>
       <div class="item right">
         <button id="render-mode-button">
-          <div id="single" class="render-mode active">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              class="icon-size icon icon-tabler icons-tabler-filled icon-tabler-crop-portrait"
-            >
-              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-              <path d="M16 3a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3z" />
-            </svg>
-          </div>
           <div id="all" class="render-mode">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -69,23 +66,24 @@ document.querySelector('#app').innerHTML = `
               <path d="M16 12h-8" />
             </svg>
           </div>
+          <div id="single" class="render-mode">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              class="icon-size icon icon-tabler icons-tabler-filled icon-tabler-crop-portrait"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M16 3a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-8a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3z" />
+            </svg>
+          </div>
         </button>
         <button id="close-button">&times;</button>
       </div>
     </div>
     <div id="pdf-container"></div>
-    <div id="control-panel">
-      <button id="prev" class="pdf-nav-button">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-      </button>
-      <button id="next" class="pdf-nav-button">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-        </svg>
-      </button>
-    </div>
   </div>
   <div id="overlay"></div>
 `

@@ -1,11 +1,22 @@
 import { PDFPageView } from "./page_view.js";
 
+
+/**
+  * Render modes
+  * @readonly
+  * @enum {number}
+  */
 const RenderModes = {
   single: 0,
   all: 1
 };
 
 
+/**
+  * Render states
+  * @readonly
+  * @enum {number}
+  */
 const RenderStates = {
   initial: 0,
   rendering: 1,

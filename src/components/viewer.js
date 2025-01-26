@@ -19,7 +19,9 @@ const DEFAULT_CACHE_SIZE = 10;
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
 
 class PDFViewBuffer {
+  /** @type {Set} **/
   #buffer = new Set();
+  /** @type {number} **/
   #size = 0;
 
   constructor(size) {
@@ -65,22 +67,36 @@ class PDFViewBuffer {
 /**
   * PDF viewer
   */
-export class PDFViewer {
+class PDFViewer {
+  /** @type {PDFViewBuffer} **/
   #buffer = null;
+  /** @type {PDFPageView[]} **/
   #pages = null;
   metadata = null;
+  /** @type {PDFDocumentProxy} **/
   pdfDocument = null;
+  /** @type {import("pdfjs-dist").PDFDocumentLoadingTask} **/
   pdfLoadingTask = null;
+  /** @type {number} **/
   #currentPage = 0;
+  /** @type {number} **/
   #currentNumPages = 0;
+  /** @type {HTMLElement} **/
   container = null;
+  /** @type {HTMLElement} **/
   pageNumElement = null;
+  /** @type {HTMLElement} **/
   pageInputElement = null;
+  /** @type {HTMLElement} **/
   totalPageNumElement = null;
+  /** @type {number} **/
   #maxCanvasPixels = null;
+  /** @type {PDFRenderQueue} **/
   #renderQueue = null;
-
+  /** @type {RenderModes} **/
   currentRenderMode = null;
+  /** @type {number} **/
+  #scale = null;
 
   constructor() {
     this.#maxCanvasPixels = 2 ** 25;
@@ -151,6 +167,7 @@ export class PDFViewer {
     this.pdfLoadingTask.promise.then(
       async (pdfDocument) => {
         await this.load(pdfDocument);
+        this.updateRenderMode();
         this.update();
       }
     );
@@ -163,6 +180,17 @@ export class PDFViewer {
 
   get maxCanvasPixels() {
     return this.#maxCanvasPixels;
+  }
+
+
+  get scale() {
+    return this.#scale;
+  }
+
+  set scale(newScale) {
+    this.#scale = newScale;
+
+    this.update();
   }
 
 
@@ -256,7 +284,7 @@ export class PDFViewer {
 
     switch (this.currentRenderMode) {
       case RenderModes.single:
-        this.currentPage = pageNum;
+        if (pageNum) this.currentPage = pageNum;
         this.update();
         break;
       case RenderModes.all:
@@ -290,12 +318,10 @@ export class PDFViewer {
           preRenderViews.push(this.#pages[this.currentPage]);
         }
 
-        if (this.currentRenderMode === RenderModes.single) {
-          Array.from(this.container.childNodes).forEach((node) => node.remove());
-          visible.forEach(
-            (view) => this.container.appendChild(view.pageContainer)
-          );
-        }
+        Array.from(this.container.childNodes).forEach((node) => node.remove());
+        visible.forEach(
+          (view) => this.container.appendChild(view.pageContainer)
+        );
 
         return {
           visible,
@@ -330,37 +356,33 @@ export class PDFViewer {
 
 
   nextPage() {
-    if (this.currentRenderMode !== RenderModes.single) return;
     if (this.#currentPage === this.#currentNumPages) return;
     if (this.#currentPage > this.#currentNumPages) {
       this.#currentPage = this.#currentNumPages;
       return;
     }
-    this.#currentPage++;
 
-    this.container.firstElementChild.remove();
-    this.update();
+    this.#currentPage++;
+    this.jumpToPage();
   }
 
 
   prevPage() {
-    if (this.currentRenderMode !== RenderModes.single) return;
     const FIRST_PAGE = 1;
     if (this.#currentPage === FIRST_PAGE) return;
     if (this.#currentPage < FIRST_PAGE) {
       this.#currentPage = FIRST_PAGE;
       return;
     }
-    this.#currentPage--;
 
-    this.container.firstElementChild.remove();
-    this.update();
+    this.#currentPage--;
+    this.jumpToPage();
   }
 
 
   /**
     * change to the next available render mode
-    * @param {Function} callback
+    * @param {function(RenderModes)=} callback
     */
   nextRenderMode(callback) {
     const modes = Object.keys(RenderModes);
@@ -373,10 +395,10 @@ export class PDFViewer {
 
   /**
     * update render mode
-    * @param {keyof RenderModes} renderMode
+    * @param {RenderModes=} renderMode render mode to update to
     */
   updateRenderMode(renderMode) {
-    this.currentRenderMode = renderMode;
+    if (typeof renderMode === "number") this.currentRenderMode = renderMode;
 
     Array.from(this.container.childNodes).forEach((node) => node.remove());
     if (this.currentRenderMode === RenderModes.all) {
@@ -385,9 +407,9 @@ export class PDFViewer {
           this.container.appendChild(page.pageContainer);
         }
       );
-
-      this.jumpToPage();
     }
+
+    this.jumpToPage();
   }
 
 
@@ -395,6 +417,8 @@ export class PDFViewer {
     this.#buffer = new PDFViewBuffer(DEFAULT_CACHE_SIZE);
     this.#pages = [];
 
-    this.currentRenderMode = RenderModes.single;
+    this.currentRenderMode = RenderModes.all;
   }
 };
+
+export { PDFViewer, PDFViewBuffer };
