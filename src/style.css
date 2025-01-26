@@ -164,7 +164,7 @@ select:hover {
   align-items: center;
 }
 
-#topbar {
+#toolbar {
   position: relative;
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -180,7 +180,7 @@ select:hover {
   color: var(--slate-200);
 }
 
-#topbar .item {
+#toolbar .item {
   display: flex;
   justify-content: start;
   align-items: center;
@@ -194,20 +194,20 @@ select:hover {
   overflow: hidden;
 }
 
-#topbar .item.middle {
+#toolbar .item.middle {
   max-width: max-content;
   justify-content: center;
   justify-self: center;
   grid-column: span 2;
 }
 
-#topbar .item.right {
+#toolbar .item.right {
   justify-content: end;
   justify-self: end;
   grid-column: span 3;
 }
 
-#topbar .item #pdf-name {
+#toolbar .item #pdf-name {
   font-size: 0.8rem;
   font-weight: 300;
   padding: 12px;
@@ -216,10 +216,12 @@ select:hover {
   white-space: nowrap;
 }
 
-#topbar .item #page-num {
+#toolbar .item #page-num {
   font-size: 0.8rem;
   font-weight: 300;
-  padding: 6px;
+  padding: 3px;
+  padding-left: 4px;
+  padding-right: 4px;
   box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
   border-radius: 8px;
   background-color: rgb(from var(--slate-500) r g b / 0.25);
@@ -232,7 +234,7 @@ select:hover {
   align-items: center;
 }
 
-#topbar .item #page-num #page-input {
+#toolbar .item #page-num #page-input {
   width: 2.5em;
   max-width: 100%;
   background-color: transparent;
@@ -247,7 +249,7 @@ select:hover {
   text-align: end;
 }
 
-#topbar .item #total-page-num {
+#toolbar .item #total-page-num {
   font-size: 0.8rem;
   font-weight: 300;
   width: max-content;
@@ -256,19 +258,19 @@ select:hover {
   white-space: nowrap;
 }
 
-#topbar .item #close-button {
+#toolbar .item #close-button {
   cursor: pointer;
   padding: 0.45em 0.6em 0.6em;
   background-color: transparent;
 }
 
-#topbar .item #close-button:hover {
+#toolbar .item #close-button:hover {
   color: var(--slate-700);
   background-color: var(--slate-100);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-#topbar .item #render-mode-button {
+#toolbar .item #render-mode-button {
   cursor: pointer;
   background-color: transparent;
   position: relative;
@@ -276,13 +278,13 @@ select:hover {
   box-sizing: border-box; /* stop overflow when there is padding */
 }
 
-#topbar .item #render-mode-button:hover {
+#toolbar .item #render-mode-button:hover {
   color: var(--slate-700);
   background-color: var(--slate-100);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-#topbar .item #render-mode-button .render-mode {
+#toolbar .item #render-mode-button .render-mode {
   background-color: transparent;
   position: absolute;
   top: 0;
@@ -302,7 +304,7 @@ select:hover {
   opacity: 0;
 }
 
-#topbar .item #render-mode-button .render-mode.active {
+#toolbar .item #render-mode-button .render-mode.active {
   transform: scale(1);
   pointer-events: auto;
   visibility: visible;
@@ -398,7 +400,7 @@ canvas {
   height: max-content;
 }
 
-.toolbar {
+.appbar {
   display: flex;
   width: 100%;
   height: 50px;
@@ -446,8 +448,18 @@ canvas {
   box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
+.pdf-nav {
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: .1s ease-in-out;
+}
+
 .pdf-nav-button {
-  margin: 0.4em;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 3px;
+  margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
@@ -455,6 +467,7 @@ canvas {
   background-color: transparent;
   color: var(--slate-100);
   transition: color .1s ease-in-out, background-color .1s ease-in-out;
+  transform: rotate(90deg);
 }
 
 .pdf-nav-button:hover {
@@ -469,6 +482,6 @@ canvas {
   padding: 0;
 }
 
-.pdf-nav-button.clockwise-90 {
-  transform: rotate(90deg);
+#page-num:has(:hover) .pdf-nav {
+  opacity: 1;
 }

@@ -8,7 +8,7 @@ document.querySelector('#app').innerHTML = `
       type="file"
       accept="application/pdf"
     />
-    <div class="toolbar">
+    <div class="appbar">
       <button
         data-modal-target="#pdf-modal"
         id="uploadBtn"
@@ -24,26 +24,50 @@ document.querySelector('#app').innerHTML = `
     </div>
   </div>
   <div id="pdf-modal">
-    <div id="topbar">
+    <div id="toolbar">
       <div class="item">
         <span id="pdf-name"></span>
       </div>
       <div class="item middle">
-        <button id="prev" class="pdf-nav-button">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-          </svg>
-        </button>
         <div id="page-num">
+          <div class="pdf-nav">
+            <button id="prev" class="pdf-nav-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="4"
+                stroke="currentColor"
+                class="icon-size"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 19.5 8.25 12l7.5-7.5"
+                />
+              </svg>
+            </button>
+            <button id="next" class="pdf-nav-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="4"
+                stroke="currentColor"
+                class="icon-size"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                />
+              </svg>
+            </button>
+          </div>
           <input type="text" patter="[0-9]" id="page-input" />
         </div>
         &#47;
         <span id="total-page-num"></span>
-        <button id="next" class="pdf-nav-button">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-size">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-          </svg>
-        </button>
       </div>
       <div class="item right">
         <button id="render-mode-button">

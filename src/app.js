@@ -62,8 +62,6 @@ const App = {
 
     if (this.pdfViewer.currentRenderMode === RenderModes.all) {
       this.renderAll.classList.add("active");
-      this.nextPageButton.classList.add("clockwise-90");
-      this.prevPageButton.classList.add("clockwise-90");
     } else {
       this.renderSingle.classList.add("active");
     }
@@ -152,14 +150,10 @@ const App = {
         case RenderModes.single:
           this.renderSingle.classList.add("active");
           this.renderAll.classList.remove("active");
-          this.nextPageButton.classList.remove("clockwise-90");
-          this.prevPageButton.classList.remove("clockwise-90");
           break;
         case RenderModes.all:
           this.renderSingle.classList.remove("active");
           this.renderAll.classList.add("active");
-          this.nextPageButton.classList.add("clockwise-90");
-          this.prevPageButton.classList.add("clockwise-90");
           break;
       }
     }
