@@ -98,13 +98,19 @@ export class PDFViewer {
 
 
   bindEvents() {
-    const onScrollEnd = () => {
+    // const hasScrollEndEvent = ("onscrollend" in window);
+    const handleScroll = () => {
       if (this.currentRenderMode === RenderModes.single) return;
       this.update();
     }
-    this.container.addEventListener("scrollend", onScrollEnd.bind(this), {
-      passive: true,
-    });
+    this.container.addEventListener(
+      // hasScrollEndEvent ? "scrollend" : "scroll",
+      "scroll",
+      handleScroll.bind(this),
+      {
+        passive: true,
+      }
+    );
 
     const onInputChange = (e) => {
       e.target.blur();
