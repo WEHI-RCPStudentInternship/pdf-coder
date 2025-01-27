@@ -73,6 +73,8 @@ class PDFViewer {
   /** @type {PDFPageView[]} **/
   #pages = null;
   metadata = null;
+  /** @type {string} **/
+  filename = null;
   /** @type {PDFDocumentProxy} **/
   pdfDocument = null;
   /** @type {import("pdfjs-dist").PDFDocumentLoadingTask} **/
@@ -82,13 +84,33 @@ class PDFViewer {
   /** @type {number} **/
   #currentNumPages = 0;
   /** @type {HTMLElement} **/
-  container = null;
+  mainContainer = null;
+  /** @type {HTMLElement} **/
+  pdfContainer = null;
   /** @type {HTMLElement} **/
   pageNumElement = null;
   /** @type {HTMLElement} **/
   pageInputElement = null;
   /** @type {HTMLElement} **/
   totalPageNumElement = null;
+  /** @type {HTMLElement} **/
+  closeButton = null;
+  /** @type {HTMLElement} **/
+  prevButton = null;
+  /** @type {HTMLElement} **/
+  nextButton = null;
+  /** @type {HTMLElement} **/
+  renderModeButton = null;
+  /** @type {HTMLElement} **/
+  renderSingle = null;
+  /** @type {HTMLElement} **/
+  renderAll = null;
+  /** @type {HTMLElement} **/
+  prevPageButton = null;
+  /** @type {HTMLElement} **/
+  nextPageButton = null;
+  /** @type {HTMLElement} **/
+  overlay = null;
   /** @type {number} **/
   #maxCanvasPixels = null;
   /** @type {PDFRenderQueue} **/
@@ -102,10 +124,21 @@ class PDFViewer {
     this.#maxCanvasPixels = 2 ** 25;
     this.#renderQueue = new PDFRenderQueue(this);
 
-    this.container = document.getElementById("pdf-container");
+    this.mainContainer = document.getElementById("pdf-viewer");
+    this.pdfContainer = document.getElementById("pdf-container");
     this.pageNumElement = document.getElementById("page-num");
     this.pageInputElement = document.getElementById("page-input");
     this.totalPageNumElement = document.getElementById("total-page-num");
+    this.closeButton = document.getElementById("close-button");
+    this.prevButton = document.getElementById("prev");
+    this.nextButton = document.getElementById("next");
+    this.renderModeButton = document.getElementById("render-mode-button");
+    this.renderAll = document.getElementById("all");
+    this.renderSingle = document.getElementById("single");
+    this.prevPageButton = document.getElementById("prev");
+    this.nextPageButton = document.getElementById("next");
+    this.overlay = document.getElementById("overlay");
+    this.fileName = document.getElementById("pdf-name");
 
     this.bindEvents();
 
@@ -114,12 +147,18 @@ class PDFViewer {
 
 
   bindEvents() {
+    // button actions
+    this.prevButton.onclick = this.prevPage.bind(this);
+    this.nextButton.onclick = this.nextPage.bind(this);
+    this.renderModeButton.onclick = this.nextRenderMode.bind(this);
+    this.closeButton.onclick = this.closePDFViewer.bind(this);
+
     // const hasScrollEndEvent = ("onscrollend" in window);
     const handleScroll = () => {
       if (this.currentRenderMode === RenderModes.single) return;
       this.update();
     }
-    this.container.addEventListener(
+    this.pdfContainer.addEventListener(
       // hasScrollEndEvent ? "scrollend" : "scroll",
       "scroll",
       handleScroll.bind(this),
@@ -156,17 +195,35 @@ class PDFViewer {
   }
 
 
+  closePDFViewer() {
+    if (!this.mainContainer.classList.contains("active")) return;
+    this.mainContainer.classList.remove("active");
+    this.overlay.classList.remove("active");
+
+    this.close();
+  }
+
+
   /**
     * open the document - to be changed when we connects with the backend
     * @param {string} url the string of the url object
     */
-  open(url) {
+  open(url, filename) {
     if (this.pdfLoadingTask) this.close();
     this.pdfLoadingTask = pdfjsLib.getDocument(url);
+    this.filename = filename;
+
+    this.fileName.innerHTML = filename;
 
     this.pdfLoadingTask.promise.then(
       async (pdfDocument) => {
         await this.load(pdfDocument);
+
+        // this has to happend first so update() and subsequent functions
+        // can access the pages' container elements
+        this.mainContainer.classList.add("active");
+        this.overlay.classList.add("active");
+
         this.updateRenderMode();
         this.update();
       }
@@ -292,10 +349,10 @@ class PDFViewer {
           this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
 
         // scroll the container to page
-        this.container.scrollTop =
+        this.pdfContainer.scrollTop =
           page.offsetTop -
           // move the page slightly down
-        parseInt(window.getComputedStyle(this.container).gap) / 2;
+        parseInt(window.getComputedStyle(this.pdfContainer).gap) / 2;
         break;
     }
   }
@@ -318,9 +375,9 @@ class PDFViewer {
           preRenderViews.push(this.#pages[this.currentPage]);
         }
 
-        Array.from(this.container.childNodes).forEach((node) => node.remove());
+        Array.from(this.pdfContainer.childNodes).forEach((node) => node.remove());
         visible.forEach(
-          (view) => this.container.appendChild(view.pageContainer)
+          (view) => this.pdfContainer.appendChild(view.pageContainer)
         );
 
         return {
@@ -331,7 +388,7 @@ class PDFViewer {
         const views = this.#pages;
 
         return getVisibleElements({
-          scrollElement: this.container,
+          scrollElement: this.pdfContainer,
           views,
         });
     }
@@ -349,7 +406,7 @@ class PDFViewer {
     this.#reset();
     this.pdfDocument.destroy();
     this.pdfDocument = null;
-    Array.from(this.container.childNodes).forEach((node) => node.remove());
+    Array.from(this.pdfContainer.childNodes).forEach((node) => node.remove());
 
     await Promise.all(promises);
   }
@@ -382,12 +439,21 @@ class PDFViewer {
 
   /**
     * change to the next available render mode
-    * @param {function(RenderModes)=} callback
     */
-  nextRenderMode(callback) {
+  nextRenderMode() {
     const modes = Object.keys(RenderModes);
     const newRenderMode = (this.currentRenderMode + 1) % modes.length;
-    if (callback) callback(newRenderMode);
+
+    switch (newRenderMode) {
+      case RenderModes.single:
+        this.renderSingle.classList.add("active");
+        this.renderAll.classList.remove("active");
+        break;
+      case RenderModes.all:
+        this.renderSingle.classList.remove("active");
+        this.renderAll.classList.add("active");
+        break;
+    }
 
     this.updateRenderMode(newRenderMode);
   }
@@ -400,11 +466,11 @@ class PDFViewer {
   updateRenderMode(renderMode) {
     if (typeof renderMode === "number") this.currentRenderMode = renderMode;
 
-    Array.from(this.container.childNodes).forEach((node) => node.remove());
+    Array.from(this.pdfContainer.childNodes).forEach((node) => node.remove());
     if (this.currentRenderMode === RenderModes.all) {
       this.#pages.forEach(
         (page) => {
-          this.container.appendChild(page.pageContainer);
+          this.pdfContainer.appendChild(page.pageContainer);
         }
       );
     }
@@ -416,8 +482,11 @@ class PDFViewer {
   #reset() {
     this.#buffer = new PDFViewBuffer(DEFAULT_CACHE_SIZE);
     this.#pages = [];
+    this.filename = null;
 
     this.currentRenderMode = RenderModes.all;
+    this.renderAll.classList.add("active");
+    this.renderSingle.classList.remove("active");
   }
 };
 
