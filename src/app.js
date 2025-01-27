@@ -7,7 +7,7 @@ const App = {
   uploadElement: null,
   // openModalButton: null,
   /** @type {HTMLElement} **/
-  pdfModal: null,
+  pdfViewerElement: null,
   /** @type {HTMLElement} **/
   overlay: null,
   /** @type {HTMLElement} **/
@@ -38,7 +38,7 @@ const App = {
     // getting the HTML elements
     this.uploadElement = document.getElementById("upload");
     // this.openModalButton = document.querySelector("[data-modal-target]");
-    this.pdfModal = document.getElementById("pdf-modal");
+    this.pdfViewerElement = document.getElementById("pdf-viewer");
     this.overlay = document.getElementById("overlay");
     this.closeModalButton = document.getElementById("close-button");
     this.dashboard = document.getElementById("dashboard");
@@ -82,7 +82,7 @@ const App = {
 
   // handling local files uploads, to be changed when we have a backend and db
   handleUpload(e) {
-    if (!this.pdfModal || !this.overlay) {
+    if (!this.pdfViewerElement || !this.overlay) {
       return;
     }
     const file = e.target.files[0];
@@ -95,20 +95,20 @@ const App = {
 
 
   openPDFViewer(url, filename) {
-    if (!url || this.pdfModal.classList.contains("active")) return;
+    if (!url || this.pdfViewerElement.classList.contains("active")) return;
 
     this.fileName.innerHTML = filename;
 
     this.pdfViewer.open(url);
 
-    this.pdfModal.classList.add("active");
+    this.pdfViewerElement.classList.add("active");
     this.overlay.classList.add("active");
   },
 
 
   closePDFViewer() {
-    if (!this.pdfModal.classList.contains("active")) return;
-    this.pdfModal.classList.remove("active");
+    if (!this.pdfViewerElement.classList.contains("active")) return;
+    this.pdfViewerElement.classList.remove("active");
     this.overlay.classList.remove("active");
 
     this.pdfViewer.close();

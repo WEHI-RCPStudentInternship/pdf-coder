@@ -167,16 +167,16 @@ select:hover {
 #toolbar {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-flow: column;
   justify-content: center;
   align-items: center;
   align-content: center;
   background-color: rgb(from var(--slate-800) r g b / 0.8);
   width: 100%;
-  height: 2em;
-  max-height: 3em;
-  padding: 6px;
+  height: 1.5em;
+  max-height: 1.5em;
+  padding: 4px;
   color: var(--slate-200);
 }
 
@@ -198,7 +198,7 @@ select:hover {
   max-width: max-content;
   justify-content: center;
   justify-self: center;
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 #toolbar .item.right {
@@ -311,7 +311,7 @@ select:hover {
   opacity: 1;
 }
 
-.app-container {
+.main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -340,7 +340,7 @@ select:hover {
   text-align: center;
 }
 
-#pdf-modal {
+#pdf-viewer {
   position: fixed;
   top: 0;
   left: 0;
@@ -357,7 +357,7 @@ select:hover {
   box-sizing: border-box;
 }
 
-#pdf-modal.active {
+#pdf-viewer.active {
   display: flex;
   transform: scale(1);
 }

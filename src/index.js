@@ -1,8 +1,11 @@
 import { App } from './app'
 
 
-document.querySelector('#app').innerHTML = `
-  <div class="app-container">
+// this helps with template literals highlighting on some editors
+const html = String.raw;
+
+const mainContainer = html`
+  <div class="main-container">
     <input
       id="upload"
       type="file"
@@ -10,7 +13,7 @@ document.querySelector('#app').innerHTML = `
     />
     <div class="appbar">
       <button
-        data-modal-target="#pdf-modal"
+        data-modal-target="#pdf-viewer"
         id="uploadBtn"
         value="Browse..."
         onclick="document.getElementById('upload').click()"
@@ -23,7 +26,10 @@ document.querySelector('#app').innerHTML = `
     <div id="dashboard">
     </div>
   </div>
-  <div id="pdf-modal">
+`;
+
+const pdfViewer = html`
+  <div id="pdf-viewer">
     <div id="toolbar">
       <div class="item">
         <span id="pdf-name"></span>
@@ -110,6 +116,11 @@ document.querySelector('#app').innerHTML = `
     <div id="pdf-container"></div>
   </div>
   <div id="overlay"></div>
+`;
+
+document.querySelector('#app').innerHTML = `
+  ${mainContainer}
+  ${pdfViewer}
 `
 
 App.run();
