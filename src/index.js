@@ -1,11 +1,9 @@
 import { App } from './app'
+import { html } from './components/utils'
 
-
-// this helps with template literals highlighting on some editors
-const html = String.raw;
 
 const mainContainer = html`
-  <div class="main-container">
+  <div id="main-container">
     <input
       id="upload"
       type="file"

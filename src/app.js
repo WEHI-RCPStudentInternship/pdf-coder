@@ -1,11 +1,12 @@
 import { PDFViewer } from "./components/viewer"
-import { RenderModes } from "./components/utils"
+import { stopEvent } from "pdfjs-dist"
 
 
 const App = {
   /** @type {HTMLElement} **/
   uploadElement: null,
-  // openModalButton: null,
+  /** @type {HTMLElement} **/
+  mainContainer: null,
   /** @type {HTMLElement} **/
   dashboard: null,
   /** @type {PDFViewer} **/
@@ -17,7 +18,7 @@ const App = {
   initialize() {
     // getting the HTML elements
     this.uploadElement = document.getElementById("upload");
-    // this.openModalButton = document.querySelector("[data-modal-target]");
+    this.mainContainer = document.getElementById("main-container");
     this.dashboard = document.getElementById("dashboard");
 
     this.pdfViewer = new PDFViewer();
@@ -34,6 +35,26 @@ const App = {
   bindEvents() {
     // adding event listeners
     this.uploadElement.addEventListener("change", this.handleUpload.bind(this));
+    // Enable dragging-and-dropping a new PDF file onto the viewerContainer.
+    this.mainContainer.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      for (const item of e.dataTransfer.items) {
+        if (item.type === "application/pdf") {
+          e.dataTransfer.dropEffect =
+            e.dataTransfer.effectAllowed === "copy" ? "copy" : "move";
+          stopEvent(e);
+          return;
+        }
+      }
+    });
+    this.mainContainer.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files?.[0].type !== "application/pdf") {
+        return;
+      }
+      this.handleUpload(e);
+      stopEvent(e);
+    });
   },
 
 
@@ -42,7 +63,10 @@ const App = {
     if (!this.pdfViewer) {
       return;
     }
-    const file = e.target.files[0];
+    const file = e.dataTransfer ?
+      e.dataTransfer.files[0] :
+      e.target.files[0];
+
     if (!file) {
       return;
     }

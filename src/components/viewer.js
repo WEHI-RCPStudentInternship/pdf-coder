@@ -1,5 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist"
-import { RenderModes, RenderStates, getVisibleElements } from "./utils"
+import { LoaderElement, RenderModes, RenderStates, getVisibleElements } from "./utils"
 import { PDFPageView } from "./page_view"
 import { PDFRenderQueue } from "./render_queue";
 
@@ -215,14 +215,16 @@ class PDFViewer {
 
     this.fileName.innerHTML = filename;
 
+    // this has to happend first so update() and subsequent functions
+    // can access the pages' container elements
+    this.mainContainer.classList.add("active");
+    this.overlay.classList.add("active");
+    this.pdfContainer.prepend(LoaderElement);
+
     this.pdfLoadingTask.promise.then(
       async (pdfDocument) => {
+        this.pdfContainer.firstElementChild.remove();
         await this.load(pdfDocument);
-
-        // this has to happend first so update() and subsequent functions
-        // can access the pages' container elements
-        this.mainContainer.classList.add("active");
-        this.overlay.classList.add("active");
 
         this.updateRenderMode();
         this.update();
