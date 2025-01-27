@@ -90,11 +90,13 @@ button {
   color: var(--slate-100);
   margin: 0.2em;
   border-width: 0;
-  width: 1em;
+  aspect-ratio: 1 / 1;
   height: 1em;
+  width: auto;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box; /* stop overflow when there is padding */
 }
 button:hover {
   color: var(--slate-700);
@@ -162,153 +164,6 @@ select:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-#toolbar {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  grid-auto-flow: column;
-  justify-content: center;
-  align-items: center;
-  align-content: center;
-  background-color: rgb(from var(--slate-800) r g b / 0.8);
-  width: 100%;
-  height: 1.5em;
-  max-height: 1.5em;
-  padding: 4px;
-  color: var(--slate-200);
-}
-
-#toolbar .item {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box; /* stop overflow when there is padding */
-  margin: 0.2em;
-  gap: 0.2em;
-  min-width: 0;
-  grid-column: span 3;
-  overflow: hidden;
-}
-
-#toolbar .item.middle {
-  max-width: max-content;
-  justify-content: center;
-  justify-self: center;
-  grid-column: span 1;
-}
-
-#toolbar .item.right {
-  justify-content: end;
-  justify-self: end;
-  grid-column: span 3;
-}
-
-#toolbar .item #pdf-name {
-  font-size: 0.8rem;
-  font-weight: 300;
-  padding: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#toolbar .item #page-num {
-  font-size: 0.8rem;
-  font-weight: 300;
-  padding: 3px;
-  padding-left: 4px;
-  padding-right: 4px;
-  box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
-  border-radius: 8px;
-  background-color: rgb(from var(--slate-500) r g b / 0.25);
-  width: max-content;
-  overflow: hidden;
-  text-overflow: hidden;
-  white-space: nowrap;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#toolbar .item #page-num #page-input {
-  width: 2.5em;
-  max-width: 100%;
-  background-color: transparent;
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  border: none;
-  outline: none;
-  overflow: hidden;
-  text-overflow: hidden;
-  white-space: nowrap;
-  text-align: end;
-}
-
-#toolbar .item #total-page-num {
-  font-size: 0.8rem;
-  font-weight: 300;
-  width: max-content;
-  overflow: hidden;
-  text-overflow: hidden;
-  white-space: nowrap;
-}
-
-#toolbar .item #close-button {
-  cursor: pointer;
-  padding: 0.45em 0.6em 0.6em;
-  background-color: transparent;
-}
-
-#toolbar .item #close-button:hover {
-  color: var(--slate-700);
-  background-color: var(--slate-100);
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-}
-
-#toolbar .item #render-mode-button {
-  cursor: pointer;
-  background-color: transparent;
-  position: relative;
-  padding: 0.5em 0.6em 0.6em;
-  box-sizing: border-box; /* stop overflow when there is padding */
-}
-
-#toolbar .item #render-mode-button:hover {
-  color: var(--slate-700);
-  background-color: var(--slate-100);
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-}
-
-#toolbar .item #render-mode-button .render-mode {
-  background-color: transparent;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transform: scale(0);
-  transition: transform .5s ease-in-out, opacity .5s ease-in-out;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
-}
-
-#toolbar .item #render-mode-button .render-mode.active {
-  transform: scale(1);
-  pointer-events: auto;
-  visibility: visible;
-  opacity: 1;
 }
 
 .main-container {
@@ -448,22 +303,178 @@ canvas {
   box-shadow: inset rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
-.pdf-nav {
-  display: flex;
-  flex-direction: column;
-  opacity: 0;
-  transition: .1s ease-in-out;
+#toolbar {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-flow: column;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  background-color: rgb(from var(--slate-800) r g b / 0.8);
+  width: 100%;
+  height: 1.75em;
+  padding: 4px;
+  color: var(--slate-200);
 }
 
-.pdf-nav-button {
-  width: 0.5em;
-  height: 0.5em;
-  border-radius: 3px;
-  margin: 0;
-  padding: 0;
+#toolbar .item {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* stop overflow when there is padding */
+  margin: 0.2em;
+  gap: 0.2em;
+  grid-column: span 3;
+  overflow: hidden;
+}
+
+#toolbar .item.middle {
+  justify-content: center;
+  justify-self: center;
+  grid-column: span 1;
+}
+
+#toolbar .item.right {
+  justify-content: end;
+  justify-self: end;
+  grid-column: span 3;
+}
+
+#toolbar .item #pdf-name {
+  font-size: 0.8rem;
+  font-weight: 300;
+  padding: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#toolbar .item #page-num {
+  font-size: 0.8rem;
+  font-weight: 300;
+  padding: 3px;
+  padding-left: 4px;
+  padding-right: 4px;
+  box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
+  border-radius: 8px;
+  background-color: rgb(from var(--slate-500) r g b / 0.25);
+  aspect-ratio: 1.75 / 1;
+  height: 100%;
+  width: auto;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#toolbar .item #page-num #page-input {
+  width: 100%;
+  max-width: 100%;
+  background-color: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border: none;
+  outline: none;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
+  text-align: end;
+}
+
+#toolbar .item #total-page-num {
+  font-size: 0.8rem;
+  font-weight: 300;
+  width: max-content;
+  overflow: hidden;
+  text-overflow: hidden;
+  white-space: nowrap;
+}
+
+#toolbar .item #close-button {
+  cursor: pointer;
+  background-color: transparent;
+  height: 100%;
+  margin: 0.1em;
+  box-sizing: border-box; /* stop overflow when there is padding */
+}
+
+#toolbar .item #close-button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+#toolbar .item #render-mode-button {
+  cursor: pointer;
+  background-color: transparent;
+  position: relative;
+  height: 100%;
+  margin: 0.1em;
+  box-sizing: border-box; /* stop overflow when there is padding */
+}
+
+#toolbar .item #render-mode-button:hover {
+  color: var(--slate-700);
+  background-color: var(--slate-100);
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+#toolbar .item #render-mode-button .render-mode {
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(0);
+  transition: transform .5s ease-in-out, opacity .5s ease-in-out;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+}
+
+#toolbar .item #render-mode-button .render-mode.active {
+  transform: scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+}
+
+.pdf-nav {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  width: max-content;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  flex-direction: column;
+  opacity: 0;
+  transition: .1s ease-in-out;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box; /* stop overflow when there is padding */
+}
+
+.pdf-nav-button {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  border-radius: 3px;
+  margin: 0;
+  padding: 0;
   background-color: transparent;
   color: var(--slate-100);
   transition: color .1s ease-in-out, background-color .1s ease-in-out;
