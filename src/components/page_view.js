@@ -12,11 +12,14 @@ import { PDFRenderQueue } from "./render_queue";
 /**
   * @typedef {import("pdfjs-dist").RenderTask} RenderTask
   */
+/**
+  * @typedef {import("pdfjs-dist").PDFPageProxy} PDFPageProxy
+  */
 
 const DEFAULT_SCALE = 1;
 
 export class PDFPageView {
-  /** @type {PDFPageView} **/
+  /** @type {PDFPageProxy} **/
   #page = null;
   /** @type {PDFViewer} **/
   #pdfViewer = null;
@@ -26,6 +29,8 @@ export class PDFPageView {
   #canvas = null;
   /** @type {HTMLElement} **/
   pageContainer = null;
+  /** @type {number} **/
+  #prevScale = null;
   /** @type {number} **/
   #scale = null;
   /** @type {RenderStates} **/
@@ -84,17 +89,20 @@ export class PDFPageView {
   }
 
   set scale(newScale) {
+    this.#prevScale = this.#scale;
     this.#scale = newScale;
-    this.cancelRender();
-    this.#setRenderContext();
+    if (this.renderState !== RenderStates.finished) this.cancelRender();
+    this.setRenderContext();
   }
 
 
   /**
     * setting the render context of the page view
+    * @param {Object} [options={}]
+    * @param {boolean} [options.keepCanvas=true]
     */
-  #setRenderContext() {
-    this.reset();
+  setRenderContext({ keepCanvas = true } = {}) {
+    this.reset({ keepCanvas });
 
     if (!this.canvas) {
       const newCanvas = document.createElement("canvas");
@@ -162,7 +170,7 @@ export class PDFPageView {
       throw new Error("pdfPage is not loaded");
     }
 
-    if (!this.canvas) this.#setRenderContext();
+    if (!this.canvas) this.setRenderContext();
 
     this.renderState = RenderStates.rendering;
 
@@ -250,5 +258,23 @@ export class PDFPageView {
       this.renderTask = null;
     }
     this.resume = null;
+  }
+
+
+  /**
+    * update css scale without rerendering
+    */
+  cssUpdateScale() {
+    if (!this.#prevScale) return;
+
+    const ratio = this.scale / this.#prevScale;
+
+    const canvas = this.canvas;
+    canvas.style.width = parseInt(canvas.style.width) * ratio + "px";
+    canvas.style.height = parseInt(canvas.style.height) * ratio + "px";
+
+    const { style } = this.pageContainer;
+    style.width = parseInt(style.width) * ratio + "px";
+    style.height = parseInt(style.height) * ratio + "px";
   }
 }

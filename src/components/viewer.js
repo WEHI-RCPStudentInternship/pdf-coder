@@ -69,6 +69,15 @@ class PDFViewBuffer {
     pageView?.destroy();
     this.#buffer.delete(pageView);
   }
+
+
+  /**
+    * update all views in buffer
+    * @param {function(PDFPageView)=} callback callback function after render finish
+    */
+  updateViewsInBuffer(callback) {
+    this.#buffer.forEach(callback);
+  }
 }
 
 /**
@@ -223,7 +232,9 @@ class PDFViewer {
     this.zoomOutButton.onclick = handleZoom;
     this.zoomInputElement.addEventListener("beforeinput", onBeforeInput);
     this.zoomInputElement.onchange = ((e) => {
-      this.scale = parseInt(e.currentTarget.value) / 100;
+      const scale = parseInt(e.currentTarget.value) / 100;
+      if (this.scale === scale) return;
+      else this.scale = scale;
     }).bind(this);
 
   }
@@ -289,9 +300,14 @@ class PDFViewer {
     this.#pages.forEach((page) => {
       page.scale = newScale;
     });
-    this.#buffer.reset(DEFAULT_CACHE_SIZE);
+    // this.#buffer.updateViewsInBuffer(
+    //   async (view) => {
+    //     view.setRenderContext();
+    //     await view.render();
+    //   }
+    // );
+
     this.jumpToPage();
-    this.update();
   }
 
 
@@ -394,10 +410,15 @@ class PDFViewer {
           this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
 
         // scroll the container to page
-        this.pdfContainer.scrollTop =
+        // this.pdfContainer.scrollTop =
+
+        const scrollTop =
           page.offsetTop -
           // move the page slightly down
-        parseInt(window.getComputedStyle(this.pdfContainer).gap) / 2;
+          parseInt(window.getComputedStyle(this.pdfContainer).gap) / 2;
+
+        if (this.pdfContainer.scrollTop === scrollTop) this.update();
+        else this.pdfContainer.scrollTop = scrollTop;
         break;
     }
   }
