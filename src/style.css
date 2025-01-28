@@ -352,11 +352,13 @@ canvas {
   white-space: nowrap;
 }
 
-#toolbar .item #page-num {
+:has(> input[type=text])[id*="value"] {
   font-size: 0.8rem;
   font-weight: 300;
   padding: 0;
-  box-shadow: inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px, inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
+  box-shadow:
+    inset rgb(from var(--slate-900) r g b / 0.4) 0px 2px 5px -1px,
+    inset rgba(0, 0, 0, 0.5) 0px 1px 3px -1px;
   border-radius: 8px;
   background-color: rgb(from var(--slate-500) r g b / 0.25);
   aspect-ratio: 2 / 1;
@@ -368,9 +370,10 @@ canvas {
   display: flex;
   justify-content: center;
   align-items: center;
+  box-sizing: border-box; /* stop overflow when there is padding */
 }
 
-#toolbar .item #page-num #page-input {
+input[type=text] {
   width: 100%;
   max-width: 100%;
   background-color: transparent;
@@ -384,7 +387,6 @@ canvas {
   white-space: nowrap;
   text-align: end;
   margin: 0.3em;
-  margin-left: 0;
 }
 
 #toolbar .item #total-page-num {
@@ -474,6 +476,11 @@ canvas {
   position: relative;
   height: 100%;
   margin: 0.1em;
+}
+
+#zoom #zoom-value span {
+  margin: 0.3em;
+  margin-left: -0.3em;
 }
 
 .icon {

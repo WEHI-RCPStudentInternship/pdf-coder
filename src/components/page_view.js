@@ -35,7 +35,7 @@ export class PDFPageView {
   #renderContext = null;
 
   constructor({
-    page, pdfViewer, renderQueue
+    page, pdfViewer, renderQueue, scale
   }) {
     this.#page = page;
     this.id = page.pageNumber;
@@ -51,7 +51,7 @@ export class PDFPageView {
     pageContainer.setAttribute("data-page-num", this.id);
     this.pageContainer = pageContainer;
 
-    this.setRenderContext();
+    this.scale = scale;
   }
 
   get page() {
@@ -85,13 +85,15 @@ export class PDFPageView {
 
   set scale(newScale) {
     this.#scale = newScale;
+    this.cancelRender();
+    this.#setRenderContext();
   }
 
 
   /**
     * setting the render context of the page view
     */
-  setRenderContext() {
+  #setRenderContext() {
     this.reset();
 
     const canvas = document.createElement("canvas");
@@ -157,7 +159,7 @@ export class PDFPageView {
       throw new Error("pdfPage is not loaded");
     }
 
-    if (!this.canvas) this.setRenderContext();
+    if (!this.canvas) this.#setRenderContext();
 
     this.renderState = RenderStates.rendering;
 
@@ -237,5 +239,13 @@ export class PDFPageView {
       keepCanvas: false,
     });
     this.page?.cleanup();
+  }
+
+  cancelRender() {
+    if (this.renderTask) {
+      this.renderTask.cancel();
+      this.renderTask = null;
+    }
+    this.resume = null;
   }
 }

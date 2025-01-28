@@ -27,7 +27,10 @@ const App = {
   },
 
 
-  run() {
+  run(...htmlStrings) {
+    document.getElementById("app").innerHTML = `
+      ${htmlStrings.join("")}
+    `
     this.initialize();
   },
 

@@ -14,6 +14,8 @@ import { PDFRenderQueue } from "./render_queue";
   */
 
 const DEFAULT_CACHE_SIZE = 10;
+const ZOOM_STEP = 10;
+const MIN_ZOOM = 50;
 
 // PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
@@ -53,6 +55,11 @@ class PDFViewBuffer {
   resize(newSize) {
   }
 
+  reset(size) {
+    this.#buffer.clear();
+    this.#size = size;
+  }
+
   /**
     * destroy the first item in the buffer
     */
@@ -88,8 +95,6 @@ class PDFViewer {
   /** @type {HTMLElement} **/
   pdfContainer = null;
   /** @type {HTMLElement} **/
-  pageNumElement = null;
-  /** @type {HTMLElement} **/
   pageInputElement = null;
   /** @type {HTMLElement} **/
   totalPageNumElement = null;
@@ -110,6 +115,12 @@ class PDFViewer {
   /** @type {HTMLElement} **/
   nextPageButton = null;
   /** @type {HTMLElement} **/
+  zoomInButton = null;
+  /** @type {HTMLElement} **/
+  zoomOutButton = null;
+  /** @type {HTMLElement} **/
+  zoomInputElement = null;
+  /** @type {HTMLElement} **/
   overlay = null;
   /** @type {number} **/
   #maxCanvasPixels = null;
@@ -126,7 +137,6 @@ class PDFViewer {
 
     this.mainContainer = document.getElementById("pdf-viewer");
     this.pdfContainer = document.getElementById("pdf-container");
-    this.pageNumElement = document.getElementById("page-num");
     this.pageInputElement = document.getElementById("page-input");
     this.totalPageNumElement = document.getElementById("total-page-num");
     this.closeButton = document.getElementById("close-button");
@@ -137,6 +147,9 @@ class PDFViewer {
     this.renderSingle = document.getElementById("single");
     this.prevPageButton = document.getElementById("prev");
     this.nextPageButton = document.getElementById("next");
+    this.zoomInButton = document.getElementById("zoom-in");
+    this.zoomOutButton = document.getElementById("zoom-out");
+    this.zoomInputElement = document.getElementById("zoom-input");
     this.overlay = document.getElementById("overlay");
     this.fileName = document.getElementById("pdf-name");
 
@@ -167,31 +180,52 @@ class PDFViewer {
       }
     );
 
-    const onInputChange = (e) => {
-      e.target.blur();
+    const onBeforeInput = (e) => {
+      if (e.inputType === "insertText" && parseInt(e.data) === NaN) {
+        e.preventDefault();
+      }
+    }
 
-      const inputLength = e.target.value.length;
+    const onPageInputChange = (e) => {
+      e.currentTarget.blur();
+
+      const inputLength = e.currentTarget.value.length;
 
       if (
         inputLength === 0 ||
-        parseInt(e.target.value) > this.#currentNumPages
+        parseInt(e.currentTarget.value) > this.#currentNumPages
       ) {
         this.pageInputElement.value = this.currentPage;
 
         const len = this.pageInputElement.value.length;
-        const style = window.getComputedStyle(e.target);
+        const style = window.getComputedStyle(e.currentTarget);
         const minWidth = parseInt(style.minWidth),
           maxWidth = parseInt(style.maxWidth);
 
-        e.target.style.width = Math.min((minWidth * len), maxWidth) + 'px';
+        e.currentTarget.style.width = Math.min((minWidth * len), maxWidth) + 'px';
         return;
       }
 
-      this.jumpToPage(parseInt(e.target.value));
+      this.jumpToPage(parseInt(e.currentTarget.value));
     }
     this.pageInputElement.addEventListener(
-      "change", onInputChange.bind(this), { passive: true }
+      "change", onPageInputChange.bind(this), { passive: true }
     );
+    this.pageInputElement.addEventListener("beforeinput", onBeforeInput);
+
+    const handleZoom = (e) => {
+      const newScale = e.currentTarget.id === "zoom-in" ?
+        (this.scale * 100 + ZOOM_STEP) / 100 :
+        Math.max(this.scale * 100 - ZOOM_STEP, MIN_ZOOM) / 100;
+      this.scale = newScale;
+    }
+    this.zoomInButton.onclick = handleZoom;
+    this.zoomOutButton.onclick = handleZoom;
+    this.zoomInputElement.addEventListener("beforeinput", onBeforeInput);
+    this.zoomInputElement.onchange = ((e) => {
+      this.scale = parseInt(e.currentTarget.value) / 100;
+    }).bind(this);
+
   }
 
 
@@ -248,7 +282,14 @@ class PDFViewer {
 
   set scale(newScale) {
     this.#scale = newScale;
+    if (this.zoomInputElement) {
+      this.zoomInputElement.value = Math.round(newScale * 100);
+    }
 
+    this.#pages.forEach((page) => {
+      page.scale = newScale;
+    });
+    this.#buffer.reset(DEFAULT_CACHE_SIZE);
     this.update();
   }
 
@@ -280,6 +321,7 @@ class PDFViewer {
             page,
             pdfViewer: this,
             renderQueue:this.#renderQueue,
+            scale: this.scale
           }));
         })
       }
@@ -485,6 +527,8 @@ class PDFViewer {
     this.#buffer = new PDFViewBuffer(DEFAULT_CACHE_SIZE);
     this.#pages = [];
     this.filename = null;
+    this.#scale = 1;
+    if (this.zoomInputElement) this.zoomInputElement.value = this.scale * 100;
 
     this.currentRenderMode = RenderModes.all;
     this.renderAll.classList.add("active");
