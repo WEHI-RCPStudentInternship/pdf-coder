@@ -96,11 +96,14 @@ export class PDFPageView {
   #setRenderContext() {
     this.reset();
 
-    const canvas = document.createElement("canvas");
-    canvas.id = "pdf";
+    if (!this.canvas) {
+      const newCanvas = document.createElement("canvas");
+      newCanvas.id = "pdf";
 
-    this.#canvas = canvas;
+      this.canvas = newCanvas;
+    }
 
+    const canvas = this.canvas;
     const context = canvas.getContext('2d', {
       alpha: false,
     });

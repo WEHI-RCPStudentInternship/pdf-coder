@@ -14,14 +14,14 @@ import { PDFRenderQueue } from "./render_queue";
   */
 
 const DEFAULT_CACHE_SIZE = 10;
-const ZOOM_STEP = 10;
+const ZOOM_STEP = 20;
 const MIN_ZOOM = 50;
 
 // PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
 
 class PDFViewBuffer {
-  /** @type {Set} **/
+  /** @type {Set<PDFPageView>} **/
   #buffer = new Set();
   /** @type {number} **/
   #size = 0;
@@ -290,6 +290,7 @@ class PDFViewer {
       page.scale = newScale;
     });
     this.#buffer.reset(DEFAULT_CACHE_SIZE);
+    this.jumpToPage();
     this.update();
   }
 
