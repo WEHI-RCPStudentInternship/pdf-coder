@@ -1,5 +1,4 @@
 import { RenderStates } from "./utils";
-import * as pdfjsLib from "pdfjs-dist"
 
 
 class PDFRenderQueue {

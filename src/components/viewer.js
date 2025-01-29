@@ -1,4 +1,5 @@
 import * as pdfjsLib from "pdfjs-dist"
+import pdfJSWorkerURL from "pdfjs-dist/build/pdf.worker?url"
 import { LoaderElement, RenderModes, RenderStates, getVisibleElements } from "./utils"
 import { PDFPageView } from "./page_view"
 import { PDFRenderQueue } from "./render_queue";
@@ -18,7 +19,7 @@ const ZOOM_STEP = 20;
 const MIN_ZOOM = 50;
 
 // PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/node_modules/pdfjs-dist/build/pdf.worker.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfJSWorkerURL;
 
 class PDFViewBuffer {
   /** @type {Set<PDFPageView>} **/
