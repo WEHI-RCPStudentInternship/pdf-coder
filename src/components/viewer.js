@@ -55,6 +55,9 @@ class PDFViewBuffer {
   resize(newSize) {
   }
 
+  /**
+    * @param {number} size
+    */
   reset(size) {
     this.#buffer.clear();
     this.#size = size;
@@ -374,22 +377,48 @@ class PDFViewer {
     this.pageInputElement.value = this.#currentPage
     this.totalPageNumElement.innerHTML = this.#currentNumPages;
 
-    [...visible, ...preRenderViews].forEach(
-      async (pageView) => {
-        switch (pageView.renderState) {
-          case RenderStates.finished:
-            return;
-          case RenderStates.paused:
-            pageView.resume();
-            break;
-          case RenderStates.rendering:
-            break;
-          case RenderStates.initial:
-            await pageView.render(this.#updateBuffer.bind(this));
-            break;
-        }
+    const renders = [...visible, ...preRenderViews];
+
+    const renderPage = (idx) => {
+      if (idx >= renders.length) return;
+
+      const pageView = renders[idx];
+      switch (pageView.renderState) {
+        case RenderStates.finished:
+          break;
+        case RenderStates.paused:
+          pageView.resume();
+          break;
+        case RenderStates.rendering:
+          break;
+        case RenderStates.initial:
+          pageView.render(this.#updateBuffer.bind(this)).then(
+            () => renderPage(++idx)
+          );
+          return;
       }
-    )
+
+      renderPage(++idx);
+    }
+
+    renderPage(0);
+
+    // [...visible, ...preRenderViews].forEach(
+    //   async (pageView) => {
+    //     switch (pageView.renderState) {
+    //       case RenderStates.finished:
+    //         break;
+    //       case RenderStates.paused:
+    //         pageView.resume();
+    //         break;
+    //       case RenderStates.rendering:
+    //         break;
+    //       case RenderStates.initial:
+    //         await pageView.render(this.#updateBuffer.bind(this));
+    //         break;
+    //     }
+    //   }
+    // )
   }
 
 
@@ -408,9 +437,6 @@ class PDFViewer {
       case RenderModes.all:
         const page =
           this.#pages[(pageNum ? pageNum : this.currentPage) - 1].pageContainer;
-
-        // scroll the container to page
-        // this.pdfContainer.scrollTop =
 
         const scrollTop =
           page.offsetTop -

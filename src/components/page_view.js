@@ -56,7 +56,10 @@ export class PDFPageView {
     pageContainer.setAttribute("data-page-num", this.id);
     this.pageContainer = pageContainer;
 
-    this.scale = scale;
+    this.#scale = scale;
+
+    this.reset();
+    this.#setRenderContext();
   }
 
   get page() {
@@ -92,18 +95,14 @@ export class PDFPageView {
     this.#prevScale = this.#scale;
     this.#scale = newScale;
     if (this.renderState !== RenderStates.finished) this.cancelRender();
-    this.setRenderContext();
+    if (this.renderState !== RenderStates.initial) this.reset();
   }
 
 
   /**
     * setting the render context of the page view
-    * @param {Object} [options={}]
-    * @param {boolean} [options.keepCanvas=true]
     */
-  setRenderContext({ keepCanvas = true } = {}) {
-    this.reset({ keepCanvas });
-
+  #setRenderContext() {
     if (!this.canvas) {
       const newCanvas = document.createElement("canvas");
       newCanvas.id = "pdf";
@@ -164,13 +163,14 @@ export class PDFPageView {
     if (this.renderState !== RenderStates.initial) {
       this.reset();
     }
+    this.#setRenderContext();
 
     if (!this.#page || !this.#pdfViewer) {
       this.renderState = RenderStates.finished;
       throw new Error("pdfPage is not loaded");
     }
 
-    if (!this.canvas) this.setRenderContext();
+    if (!this.canvas) this.#setRenderContext();
 
     this.renderState = RenderStates.rendering;
 
@@ -216,6 +216,7 @@ export class PDFPageView {
   } = {}) {
     this.renderState = RenderStates.initial;
     this.#renderContext = null;
+    this.resume = null
 
     if (!keepCanvas) {
       this.canvas?.remove();
