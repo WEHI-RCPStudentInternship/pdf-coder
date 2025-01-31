@@ -26,6 +26,8 @@ export class PDFPageView {
   /** @type {PDFRenderQueue} **/
   #renderQueue = null;
   /** @type {HTMLElement} **/
+  #textLayerDiv = null;
+  /** @type {HTMLElement} **/
   #canvas = null;
   /** @type {HTMLElement} **/
   pageContainer = null;
@@ -33,6 +35,8 @@ export class PDFPageView {
   #prevScale = null;
   /** @type {number} **/
   #scale = null;
+  /** @type {TextLayer} **/
+  #textLayer = null;
   /** @type {RenderStates} **/
   #renderState = RenderStates.initial;
   /** @type {Error} **/
@@ -153,6 +157,34 @@ export class PDFPageView {
       transform,
       viewport,
     };
+
+    // Set up text layer for text selection
+    if (!this.textLayerDiv) {
+      const textLayerDiv = document.createElement("div");
+      textLayerDiv.id = "textLayerDiv";
+
+      this.textLayerDiv = textLayerDiv;
+    }
+
+    const textLayerDiv = this.textLayerDiv;
+    
+    textLayerDiv.width = roundToDivide(width * outputScale.sx, sfx[0]);
+    textLayerDiv.height = roundToDivide(height * outputScale.sy, sfy[0]);
+
+    textLayerDiv.style.width = roundToDivide(width, sfx[1]) + "px";
+    textLayerDiv.style.height = roundToDivide(height, sfy[1]) + "px";
+    
+    textLayerDiv.style.position = "absolute";
+
+    const textLayer = new pdfjsLib.TextLayer({
+      textContentSource: this.#page,
+      container: textLayerDiv,
+      viewport: viewport
+    });
+
+    // textLayer.render();
+
+    // console.log(textLayer);
   }
 
   /**
@@ -241,6 +273,7 @@ export class PDFPageView {
 
     this.renderState = RenderStates.finished;
     this.pageContainer.appendChild(this.#canvas);
+    this.pageContainer.appendChild(this.textLayerDiv);
     callback?.(this);
 
     if (error) throw error;
