@@ -7,6 +7,8 @@ import {
 import * as pdfjsLib from "pdfjs-dist"
 import { PDFViewer } from "./viewer";
 import { PDFRenderQueue } from "./render_queue";
+import { TextLayerBuilder } from "pdfjs-dist/web/pdf_viewer.mjs";
+
 
 
 /**
@@ -37,6 +39,8 @@ export class PDFPageView {
   #scale = null;
   /** @type {TextLayer} **/
   #textLayer = null;
+  /** @type {TextLayerBuilder} **/
+  textLayerBuilder = null;
   /** @type {RenderStates} **/
   #renderState = RenderStates.initial;
   /** @type {Error} **/
@@ -158,33 +162,29 @@ export class PDFPageView {
       viewport,
     };
 
-    // Set up text layer for text selection
+    // Create new text layer builder and div if doesnt exist (only the first time)
     if (!this.textLayerDiv) {
       const textLayerDiv = document.createElement("div");
       textLayerDiv.id = "textLayerDiv";
 
       this.textLayerDiv = textLayerDiv;
     }
-
-    const textLayerDiv = this.textLayerDiv;
     
-    textLayerDiv.width = roundToDivide(width * outputScale.sx, sfx[0]);
-    textLayerDiv.height = roundToDivide(height * outputScale.sy, sfy[0]);
+    if (!this.textLayerBuilder) {
+      const newTextLayerBuilder = new TextLayerBuilder({
+        pdfPage: this.#page,
+      })
 
-    textLayerDiv.style.width = roundToDivide(width, sfx[1]) + "px";
-    textLayerDiv.style.height = roundToDivide(height, sfy[1]) + "px";
+      this.textLayerBuilder = newTextLayerBuilder;
+    }
     
-    textLayerDiv.style.position = "absolute";
+    const textLayerBuilder = this.textLayerBuilder;
+    
+    // Set scale in the CSS for the text layer
+    const scaleFactor = this.#renderContext.viewport.scale;
+    textLayerBuilder.div.style.setProperty('--scale-factor', scaleFactor);
 
-    const textLayer = new pdfjsLib.TextLayer({
-      textContentSource: this.#page,
-      container: textLayerDiv,
-      viewport: viewport
-    });
-
-    // textLayer.render();
-
-    // console.log(textLayer);
+    this.textLayerBuilder = textLayerBuilder;
   }
 
   /**
@@ -226,6 +226,8 @@ export class PDFPageView {
       async () => {
         // console.log('Page rendered!', this.id);
         await this.#finishRender(renderTask, callback);
+        await this.textLayerBuilder.render(this.#renderContext.viewport, 'display');
+        console.log(this.textLayerBuilder);
       },
       (error) => {
         // console.error('Page error!', this.id);
@@ -273,7 +275,7 @@ export class PDFPageView {
 
     this.renderState = RenderStates.finished;
     this.pageContainer.appendChild(this.#canvas);
-    this.pageContainer.appendChild(this.textLayerDiv);
+    this.pageContainer.appendChild(this.textLayerBuilder.div);
     callback?.(this);
 
     if (error) throw error;
