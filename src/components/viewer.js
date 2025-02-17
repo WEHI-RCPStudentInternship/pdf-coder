@@ -3,6 +3,17 @@ import pdfJSWorkerURL from "pdfjs-dist/build/pdf.worker?url"
 import { LoaderElement, RenderModes, RenderStates, getVisibleElements } from "./utils"
 import { PDFPageView } from "./page_view"
 import { PDFRenderQueue } from "./render_queue";
+import { html } from "./utils";
+import toolbar from "./toolbar";
+
+
+export default html`
+  <div id="pdf-viewer">
+    ${toolbar}
+    <div id="pdf-container"></div>
+  </div>
+  <div id="overlay"></div>
+`;
 
 
 /**
@@ -236,7 +247,10 @@ class PDFViewer {
     this.zoomOutButton.onclick = handleZoom;
     this.zoomInputElement.addEventListener("beforeinput", onBeforeInput);
     this.zoomInputElement.onchange = ((e) => {
+      e.currentTarget.blur();
+
       const scale = parseInt(e.currentTarget.value) / 100;
+
       if (this.scale === scale) return;
       else this.scale = scale;
     }).bind(this);
@@ -585,4 +599,8 @@ class PDFViewer {
   }
 };
 
-export { PDFViewer, PDFViewBuffer };
+
+export {
+  PDFViewer,
+  PDFViewBuffer
+};
